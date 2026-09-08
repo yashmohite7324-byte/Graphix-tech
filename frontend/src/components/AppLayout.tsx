@@ -94,20 +94,24 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const Sidebar = () => (
     <div className={`flex flex-col h-full bg-white border-r border-slate-200 transition-all duration-200 ${collapsed ? 'w-16' : 'w-60'}`}>
       {/* Logo */}
+      {/* Animated 360 Rotating Logo */}
       <div className={`flex items-center gap-3 px-4 py-5 border-b border-slate-100 ${collapsed ? 'justify-center' : ''}`}>
-        <div className="w-8 h-8 bg-brand-500 rounded-lg flex items-center justify-center flex-shrink-0">
-          <GraduationCap size={18} className="text-white" />
+        <div className="relative w-11 h-11 flex-shrink-0 group cursor-pointer">
+          <div className="absolute inset-0 bg-gradient-to-tr from-brand-500 via-indigo-500 to-purple-500 rounded-xl blur-md opacity-60 group-hover:opacity-100 animate-spin-slow transition-all duration-500"></div>
+          <div className="relative w-full h-full rounded-xl overflow-hidden flex items-center justify-center bg-white border border-white/50 p-1 z-10 shadow-lg animate-spin-slow">
+            <img src="/graphix-logo-final.jpg" alt="Graphix Logo" className="w-full h-full object-cover rounded-lg scale-110" />
+          </div>
         </div>
         {!collapsed && (
           <div>
-            <p className="text-sm font-bold text-slate-900 leading-none">CareerHub</p>
-            <p className="text-xs text-slate-500 mt-0.5">{roleLabel[user?.role || 'STUDENT']}</p>
+            <p className="text-sm font-extrabold text-slate-900 leading-none">Graphix Infotech</p>
+            <p className="text-[10px] text-brand-600 mt-1 uppercase tracking-wider font-semibold">{roleLabel[user?.role || 'STUDENT']}</p>
           </div>
         )}
       </div>
 
       {/* Nav Items */}
-      <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
         {navItems.map((item) => {
           const active = location.pathname === item.to;
           return (
@@ -115,9 +119,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               key={item.to}
               to={item.to}
               onClick={() => setMobileOpen(false)}
-              className={active ? 'sidebar-link-active' : 'sidebar-link'}
+              className={active ? 'sidebar-link-active relative overflow-hidden' : 'sidebar-link hover:translate-x-1 transition-transform'}
               title={collapsed ? item.label : undefined}
             >
+              {active && <div className="absolute left-0 top-0 bottom-0 w-1 bg-brand-500 rounded-r-full" />}
               {item.icon}
               {!collapsed && <span>{item.label}</span>}
             </Link>
@@ -135,7 +140,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         )}
         <button
           onClick={handleLogout}
-          className="sidebar-link w-full"
+          className="sidebar-link w-full hover:text-red-600 hover:bg-red-50 transition-colors"
           title={collapsed ? 'Logout' : undefined}
         >
           <LogOut size={18} />
@@ -146,13 +151,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <div className="flex h-screen overflow-hidden bg-slate-50">
+    <div className="flex h-screen overflow-hidden bg-slate-50 font-sans text-slate-900">
       {/* Desktop sidebar */}
-      <div className="hidden md:flex flex-col relative">
+      <div className="hidden md:flex flex-col relative z-20 shadow-xl shadow-slate-200/50">
         <Sidebar />
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="absolute -right-3 top-20 w-6 h-6 bg-white border border-slate-200 rounded-full flex items-center justify-center shadow-sm z-10 hover:bg-slate-50"
+          className="absolute -right-3 top-20 w-6 h-6 bg-white border border-slate-200 rounded-full flex items-center justify-center shadow-sm z-10 hover:bg-slate-50 hover:scale-110 transition-transform text-slate-400 hover:text-slate-600"
         >
           {collapsed ? <ChevronRight size={12} /> : <ChevronLeft size={12} />}
         </button>
@@ -161,33 +166,33 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       {/* Mobile sidebar overlay */}
       {mobileOpen && (
         <div className="md:hidden fixed inset-0 z-40 flex">
-          <div className="flex flex-col w-60">
+          <div className="flex flex-col w-60 animate-[slideIn_0.3s_ease-out]">
             <Sidebar />
           </div>
-          <div className="flex-1 bg-black/40" onClick={() => setMobileOpen(false)} />
+          <div className="flex-1 bg-black/40 backdrop-blur-sm animate-fadeIn" onClick={() => setMobileOpen(false)} />
         </div>
       )}
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden relative">
         {/* Top bar */}
-        <div className="bg-white border-b border-slate-200 px-4 md:px-6 py-3 flex items-center gap-3">
+        <div className="bg-white/80 backdrop-blur-md border-b border-slate-200 px-4 md:px-6 py-3 flex items-center gap-3 z-10 sticky top-0">
           <button
-            className="md:hidden p-1.5 rounded-lg hover:bg-slate-100"
+            className="md:hidden p-1.5 rounded-lg hover:bg-slate-100 transition-colors"
             onClick={() => setMobileOpen(true)}
           >
             <Menu size={20} className="text-slate-600" />
           </button>
           <div className="flex-1" />
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center text-brand-600 text-xs font-bold">
+          <div className="flex items-center gap-2 hover:scale-105 transition-transform cursor-pointer">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-brand-500 to-indigo-500 flex items-center justify-center text-white text-xs font-bold shadow-md">
               {user?.email?.[0]?.toUpperCase()}
             </div>
           </div>
         </div>
 
-        {/* Page content */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-6">
+        {/* Page content with fade-in transition per route */}
+        <main key={location.pathname} className="flex-1 overflow-y-auto p-4 md:p-6 animate-fadeIn">
           {children}
         </main>
       </div>

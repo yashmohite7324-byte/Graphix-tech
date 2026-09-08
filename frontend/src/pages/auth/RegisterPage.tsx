@@ -34,59 +34,51 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 flex">
+    <div className="min-h-screen bg-black flex">
       {/* Left branding panel */}
       <div className="hidden lg:flex lg:w-1/2 flex-col justify-between p-12 text-white relative">
         <div className="absolute inset-0">
-          <img src="/signup-bg.jpg" alt="Signup Illustration" className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-brand-900/80 mix-blend-multiply" />
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 to-transparent" />
+          <img src="/graphix-logo-final.jpg" alt="Signup Illustration" className="w-full h-full object-cover opacity-20 mix-blend-luminosity" />
+          <div className="absolute inset-0 bg-gradient-to-r from-black via-black/90 to-transparent" />
         </div>
         
-        <div className="relative z-10 flex items-center gap-3">
-          <div className="w-10 h-10 bg-brand-500 rounded-xl flex items-center justify-center">
-            <GraduationCap size={22} className="text-white" />
+        <div className="relative z-10 flex flex-col justify-center flex-1 items-center animate-fadeIn">
+          <div className="w-96 rounded-2xl overflow-hidden shadow-2xl animate-float drop-shadow-[0_20px_50px_rgba(59,130,246,0.3)] border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
+             <img src="/graphix-logo-final.jpg" alt="Graphix Infotech Logo" className="w-full h-auto object-contain rounded-xl" />
           </div>
-          <div>
-            <p className="font-bold text-lg leading-none">Graphix CareerHub</p>
-            <p className="text-sm text-slate-300 mt-0.5">Placement Management Platform</p>
+          
+          <div className="mt-12 text-center">
+            <h1 className="text-4xl font-extrabold leading-tight mb-4 bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">
+              Accelerate your career.
+            </h1>
+            <p className="text-slate-300 text-lg leading-relaxed max-w-md mx-auto font-light">
+              Join thousands of students and top recruiters. Discover opportunities and build your professional future with Graphix Infotech.
+            </p>
           </div>
         </div>
 
-        <div className="relative z-10">
-          <h1 className="text-4xl font-bold leading-tight mb-4">
-            Accelerate your career<br />growth today.
-          </h1>
-          <p className="text-slate-200 text-lg leading-relaxed max-w-md">
-            Join thousands of students and top recruiters. Discover opportunities and build your professional future.
-          </p>
-        </div>
-
-        <div className="relative z-10 grid grid-cols-2 gap-4 mt-8">
-          {[
-            { label: 'Top Companies', value: 'Google, Microsoft' },
-            { label: 'Highest Package', value: '₹24L' },
-            { label: 'Success Rate', value: '94%' },
-            { label: 'Active Jobs', value: '300+' },
-          ].map((s) => (
-            <div key={s.label} className="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
-              <p className="text-xl font-bold">{s.value}</p>
-              <p className="text-sm text-slate-200 mt-0.5">{s.label}</p>
-            </div>
-          ))}
+        <div className="relative z-10 flex justify-between text-sm text-slate-500 font-medium">
+          <span>© 2026 Graphix Infotech Pvt Ltd.</span>
+          <div className="flex gap-4">
+            <a href="#" className="hover:text-white transition-colors">Privacy</a>
+            <a href="#" className="hover:text-white transition-colors">Terms</a>
+          </div>
         </div>
       </div>
 
       {/* Right register form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-6">
-        <div className="w-full max-w-md">
-          <div className="bg-white rounded-2xl shadow-2xl p-8">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 bg-slate-50 relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-64 h-64 bg-brand-500/10 rounded-full blur-3xl -translate-y-1/2 -translate-x-1/2" />
+        <div className="absolute bottom-0 right-0 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl translate-y-1/2 translate-x-1/2" />
+        
+        <div className="w-full max-w-md animate-fadeIn" style={{ animationDelay: '0.2s' }}>
+          <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100/50 p-10">
             <div className="mb-8">
-              <div className="lg:hidden flex items-center gap-2 mb-6">
-                <div className="w-8 h-8 bg-brand-500 rounded-lg flex items-center justify-center">
-                  <GraduationCap size={16} className="text-white" />
+              <div className="lg:hidden flex items-center justify-center gap-3 mb-6">
+                <div className="w-10 h-10 rounded-xl overflow-hidden shadow-sm border border-slate-200">
+                  <img src="/graphix-logo.jpg" alt="Logo" className="w-full h-full object-cover" />
                 </div>
-                <span className="font-bold text-slate-900">CareerHub</span>
+                <span className="font-extrabold text-xl tracking-tight text-slate-900">GRAPHIX INFOTECH</span>
               </div>
             </div>
 
