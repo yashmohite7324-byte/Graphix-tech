@@ -10,4 +10,7 @@ public class AuthResponse {
     private String refreshToken;
     private String role;
     private String email;
+    private String name;
+    private String designation;
+    private String companyName;
 }

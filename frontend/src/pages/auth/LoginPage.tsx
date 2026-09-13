@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { authApi } from '../../api';
 import { GraduationCap, Eye, EyeOff, Loader2, Briefcase, ShieldCheck, Mail, Lock, Sun, Moon, Info } from 'lucide-react';
-import BackgroundStorm from '../../components/BackgroundStorm';
+import NetworkTopologyBackground from '../../components/NetworkTopologyBackground';
 
 type RoleTab = 'STUDENT' | 'RECRUITER' | 'ADMIN';
 
@@ -34,8 +34,8 @@ export default function LoginPage() {
     setError('');
     try {
       const res = await authApi.login(form);
-      const { accessToken, refreshToken, role, email } = res.data.data;
-      login(accessToken, refreshToken, role, email);
+      const { accessToken, refreshToken, role, email, name, designation, companyName } = res.data.data;
+      login(accessToken, refreshToken, role, email, name, designation, companyName);
       const routes: Record<string, string> = {
         STUDENT: '/student/dashboard',
         RECRUITER: '/recruiter/dashboard',
@@ -51,54 +51,72 @@ export default function LoginPage() {
     }
   };
 
-  const colorThemeMap: Record<RoleTab, 'blue' | 'orange' | 'purple'> = {
-    STUDENT: 'blue',
-    RECRUITER: 'orange',
-    ADMIN: 'purple'
-  };
+  const logoRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    let animationFrameId: number;
+    let time = 0;
+    
+    const animateLogo = () => {
+      time += 1;
+      if (logoRef.current) {
+        const y = Math.sin((time * 0.02)) * 12;
+        const rotZ = Math.cos((time * 0.015)) * 1.5;
+        const rotY = Math.sin((time * 0.01)) * 5;
+        const rotX = Math.cos((time * 0.012)) * 3;
+        
+        logoRef.current.style.transform = `translateY(${y}px) rotateZ(${rotZ}deg) rotateY(${rotY}deg) rotateX(${rotX}deg)`;
+      }
+      animationFrameId = requestAnimationFrame(animateLogo);
+    };
+    
+    animateLogo();
+    return () => cancelAnimationFrame(animationFrameId);
+  }, []);
 
   return (
-    <div className="min-h-screen flex overflow-hidden bg-[#080503] transition-colors duration-1000 relative">
+    <div className="min-h-screen flex overflow-hidden bg-slate-50 dark:bg-[#080503] transition-colors duration-1000 relative">
       
-      {/* Immersive WebGL Particle Storm Background */}
-      <BackgroundStorm colorTheme={colorThemeMap[activeTab]} />
+      {/* New Network Topology Background */}
+      <div className="absolute inset-0 z-0 transition-opacity duration-1000">
+        <NetworkTopologyBackground />
+      </div>
 
       {/* Theme Toggle Button */}
       <button
         onClick={() => setIsDark(!isDark)}
-        className="absolute top-6 right-6 z-20 p-2.5 rounded-full bg-white/10 dark:bg-black/20 backdrop-blur-md shadow-lg border border-white/20 text-white hover:scale-110 hover:bg-white/20 transition-all"
+        className="absolute top-6 right-6 z-20 p-2.5 rounded-full bg-slate-200/50 dark:bg-black/20 backdrop-blur-md shadow-lg border border-slate-300/50 dark:border-white/20 text-slate-800 dark:text-white hover:scale-110 hover:bg-slate-300/50 dark:hover:bg-white/20 transition-all"
       >
         {isDark ? <Sun size={20} /> : <Moon size={20} />}
       </button>
 
       {/* Left branding panel (Half screen) */}
-      <div className="hidden lg:flex lg:w-1/2 flex-col justify-center items-center p-12 text-white relative z-10 transition-all duration-1000">
+      <div className="hidden lg:flex lg:w-1/2 flex-col justify-center items-center p-12 relative z-10 transition-all duration-1000" style={{ perspective: '1000px' }}>
         <div className="relative flex flex-col items-center animate-fadeIn">
-          {/* 2D Moving Polish Logo Animation (Floating) */}
-          <div className="relative w-96 h-64 mb-8 animate-float cursor-pointer group">
-             {/* Glowing Aura */}
-             <div className={`absolute -inset-4 rounded-[2rem] bg-gradient-to-tr blur-3xl opacity-50 group-hover:opacity-80 transition-all duration-1000 ${activeTab === 'STUDENT' ? 'from-blue-600 to-indigo-500' : activeTab === 'RECRUITER' ? 'from-orange-500 to-amber-500' : 'from-purple-600 to-pink-500'}`}></div>
-             {/* 2D Floating Logo Container */}
-             <div className="relative w-full h-full rounded-[1.5rem] overflow-hidden bg-white/5 backdrop-blur-md border border-white/10 p-2 shadow-2xl">
-               <img src="/graphix-logo-final.jpg" alt="Graphix Infotech Logo" className="w-full h-full object-contain rounded-xl" />
-             </div>
+          {/* 3D Paper Polish Logo Animation */}
+          <div ref={logoRef} className="relative w-80 sm:w-96 mb-8 cursor-pointer group transition-transform duration-500 hover:scale-105" style={{ transformStyle: 'preserve-3d' }}>
+             {/* Glowing Aura adapted for light/dark mode */}
+             <div className={`absolute -inset-4 rounded-full bg-gradient-to-tr blur-3xl opacity-30 dark:opacity-50 group-hover:opacity-50 dark:group-hover:opacity-70 transition-all duration-1000 ${activeTab === 'STUDENT' ? 'from-blue-600 to-indigo-500' : activeTab === 'RECRUITER' ? 'from-orange-500 to-amber-500' : 'from-purple-600 to-pink-500'}`}></div>
+             
+             {/* Raw image without the card background wrapper */}
+             <img src="/graphix-logo-final.jpg" alt="Graphix Infotech Logo" className="relative w-full h-auto object-contain rounded-2xl shadow-2xl dark:shadow-none mix-blend-multiply dark:mix-blend-normal" />
           </div>
           
           <div className="text-center max-w-md mt-2">
-            <h1 className="text-3xl font-extrabold leading-tight mb-3 text-[#fff6ec] drop-shadow-lg transition-all duration-500 font-display">
+            <h1 className="text-3xl font-extrabold leading-tight mb-3 text-slate-900 dark:text-[#fff6ec] drop-shadow-sm dark:drop-shadow-lg transition-colors duration-500 font-display">
               Compute scaled in the void.
             </h1>
-            <p className="text-slate-400 text-base leading-relaxed font-light transition-all duration-500">
+            <p className="text-slate-600 dark:text-slate-400 text-base leading-relaxed font-light transition-colors duration-500">
               Welcome to Graphix TechHire. Orchestrating hyperscale infrastructure for your career.
             </p>
           </div>
         </div>
 
-        <div className="absolute bottom-12 left-12 right-12 flex justify-between text-sm text-slate-500 font-medium">
+        <div className="absolute bottom-12 left-12 right-12 flex justify-between text-sm text-slate-500 dark:text-slate-500 font-medium transition-colors">
           <span>© 2026 Graphix Infotech Pvt Ltd.</span>
           <div className="flex gap-4">
-            <a href="#" className="hover:text-[#fff1e2] transition-colors">Privacy</a>
-            <a href="#" className="hover:text-[#fff1e2] transition-colors">Terms</a>
+            <a href="#" className="hover:text-slate-800 dark:hover:text-[#fff1e2] transition-colors">Privacy</a>
+            <a href="#" className="hover:text-slate-800 dark:hover:text-[#fff1e2] transition-colors">Terms</a>
           </div>
         </div>
       </div>

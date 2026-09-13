@@ -134,8 +134,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <div className="px-3 py-4 border-t border-slate-100">
         {!collapsed && (
           <div className="px-3 mb-3">
-            <p className="text-xs font-semibold text-slate-900 truncate">{user?.email}</p>
-            <p className="text-xs text-slate-500 mt-0.5">{user?.role?.replace('_', ' ')}</p>
+            <p className="text-xs font-bold text-slate-900 truncate">
+              {user?.companyName || user?.name || user?.email}
+            </p>
+            <p className="text-xs text-slate-500 mt-0.5 truncate">
+              {user?.designation || user?.role?.replace('_', ' ')}
+            </p>
           </div>
         )}
         <button
@@ -186,7 +190,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           <div className="flex-1" />
           <div className="flex items-center gap-2 hover:scale-105 transition-transform cursor-pointer">
             <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-brand-500 to-indigo-500 flex items-center justify-center text-white text-xs font-bold shadow-md">
-              {user?.email?.[0]?.toUpperCase()}
+              {(user?.companyName || user?.name || user?.email || 'U')[0].toUpperCase()}
             </div>
           </div>
         </div>

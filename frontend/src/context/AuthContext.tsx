@@ -3,11 +3,14 @@ import React, { createContext, useContext, useState } from 'react';
 interface AuthUser {
   email: string;
   role: string;
+  name?: string;
+  designation?: string;
+  companyName?: string;
 }
 
 interface AuthContextType {
   user: AuthUser | null;
-  login: (accessToken: string, refreshToken: string, role: string, email: string) => void;
+  login: (accessToken: string, refreshToken: string, role: string, email: string, name?: string, designation?: string, companyName?: string) => void;
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -18,15 +21,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(() => {
     const email = localStorage.getItem('email');
     const role = localStorage.getItem('role');
-    return email && role ? { email, role } : null;
+    const name = localStorage.getItem('name') || undefined;
+    const designation = localStorage.getItem('designation') || undefined;
+    const companyName = localStorage.getItem('companyName') || undefined;
+    return email && role ? { email, role, name, designation, companyName } : null;
   });
 
-  const login = (accessToken: string, refreshToken: string, role: string, email: string) => {
+  const login = (accessToken: string, refreshToken: string, role: string, email: string, name?: string, designation?: string, companyName?: string) => {
     localStorage.setItem('accessToken', accessToken);
     localStorage.setItem('refreshToken', refreshToken);
     localStorage.setItem('role', role);
     localStorage.setItem('email', email);
-    setUser({ email, role });
+    if (name) localStorage.setItem('name', name);
+    if (designation) localStorage.setItem('designation', designation);
+    if (companyName) localStorage.setItem('companyName', companyName);
+    
+    setUser({ email, role, name, designation, companyName });
   };
 
   const logout = () => {

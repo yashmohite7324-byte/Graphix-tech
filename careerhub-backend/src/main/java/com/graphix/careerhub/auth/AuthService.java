@@ -12,6 +12,11 @@ import com.graphix.careerhub.users.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.graphix.careerhub.companies.RecruiterProfile;
+import com.graphix.careerhub.companies.RecruiterProfileRepository;
+import com.graphix.careerhub.students.StudentProfile;
+import com.graphix.careerhub.students.StudentProfileRepository;
+
 @Service
 public class AuthService {
 
@@ -21,16 +26,22 @@ public class AuthService {
     private final OtpService otpService;
     private final RefreshTokenService refreshTokenService;
     private final AuditService auditService;
+    private final RecruiterProfileRepository recruiterProfileRepository;
+    private final StudentProfileRepository studentProfileRepository;
 
     public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder,
                         JwtService jwtService, OtpService otpService,
-                        RefreshTokenService refreshTokenService, AuditService auditService) {
+                        RefreshTokenService refreshTokenService, AuditService auditService,
+                        RecruiterProfileRepository recruiterProfileRepository,
+                        StudentProfileRepository studentProfileRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.otpService = otpService;
         this.refreshTokenService = refreshTokenService;
         this.auditService = auditService;
+        this.recruiterProfileRepository = recruiterProfileRepository;
+        this.studentProfileRepository = studentProfileRepository;
     }
 
     public String register(RegisterRequest request) {
@@ -85,13 +96,32 @@ public class AuthService {
 
         auditService.log(user.getEmail(), "LOGIN", "User", user.getId().toString(), null);
 
-        return new AuthResponse(accessToken, refreshToken.getToken(), user.getRole().name(), user.getEmail());
+        String name = null;
+        String designation = null;
+        String companyName = null;
+
+        if (user.getRole() == User.Role.RECRUITER) {
+            RecruiterProfile rp = recruiterProfileRepository.findByUserId(user.getId()).orElse(null);
+            if (rp != null) {
+                designation = rp.getDesignation();
+                if (rp.getCompany() != null) {
+                    companyName = rp.getCompany().getName();
+                }
+            }
+        } else if (user.getRole() == User.Role.STUDENT) {
+            StudentProfile sp = studentProfileRepository.findByUserId(user.getId()).orElse(null);
+            if (sp != null) {
+                name = sp.getFullName();
+            }
+        }
+
+        return new AuthResponse(accessToken, refreshToken.getToken(), user.getRole().name(), user.getEmail(), name, designation, companyName);
     }
 
     public AuthResponse refresh(String rawRefreshToken) {
         RefreshToken rotated = refreshTokenService.rotate(rawRefreshToken);
         User user = rotated.getUser();
         String accessToken = jwtService.generateAccessToken(user.getEmail(), user.getRole().name());
-        return new AuthResponse(accessToken, rotated.getToken(), user.getRole().name(), user.getEmail());
+        return new AuthResponse(accessToken, rotated.getToken(), user.getRole().name(), user.getEmail(), null, null, null);
     }
 }
