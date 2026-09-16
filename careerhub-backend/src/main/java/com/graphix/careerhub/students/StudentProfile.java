@@ -16,6 +16,11 @@ import lombok.Setter;
 @Setter
 public class StudentProfile extends BaseEntity {
 
+    public enum VerificationStatus { PENDING, APPROVED, REJECTED }
+
+    @jakarta.persistence.Enumerated(jakarta.persistence.EnumType.STRING)
+    private VerificationStatus verificationStatus = VerificationStatus.PENDING;
+
     @OneToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id", unique = true)
     private User user;

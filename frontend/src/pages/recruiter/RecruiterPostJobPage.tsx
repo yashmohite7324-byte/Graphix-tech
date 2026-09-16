@@ -1,110 +1,161 @@
-import React, { useState } from 'react';
-import { Briefcase, MapPin, DollarSign, Calendar, CheckCircle, Plus } from 'lucide-react';
+import { useState } from 'react';
+import { Briefcase, MapPin, IndianRupee, CheckCircle, Plus } from 'lucide-react';
+import { recruiterApi } from '../../api';
+import { useNavigate } from 'react-router-dom';
 
 export default function RecruiterPostJobPage() {
   const [branches, setBranches] = useState<string[]>([]);
-  
+  const [formData, setFormData] = useState({
+    title: '',
+    type: 'Full-time', // For UI mapping to description later
+    location: '',      // For UI mapping
+    ctc: '',
+    minCgpa: '',
+    maxBacklogs: '',
+    batchYear: new Date().getFullYear(),
+    skills: '',
+    deadline: '',
+    description: ''
+  });
+  const [loading, setLoading] = useState(false);
+  const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
+  const navigate = useNavigate();
+
   const toggleBranch = (branch: string) => {
     setBranches(prev => prev.includes(branch) ? prev.filter(b => b !== branch) : [...prev, branch]);
   };
 
-  const handlePostJob = (e: React.FormEvent) => {
+  const showToast = (message: string, type: 'success' | 'error') => {
+      setToast({ message, type });
+      setTimeout(() => setToast(null), 3000);
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handlePostJob = async (e: React.FormEvent) => {
     e.preventDefault();
-    alert('Job posted (mock API call to /recruiter/jobs)');
+    setLoading(true);
+    try {
+        const payload = {
+            title: formData.title,
+            description: `${formData.type} | ${formData.location} \n\n${formData.description}`,
+            ctc: formData.ctc ? parseFloat(formData.ctc) : 0,
+            applicationDeadline: formData.deadline,
+            minCgpa: formData.minCgpa ? parseFloat(formData.minCgpa) : 0,
+            maxBacklogs: formData.maxBacklogs ? parseInt(formData.maxBacklogs) : 0,
+            eligibleBranches: branches.join(','),
+            eligibleBatchYear: formData.batchYear,
+            requiredSkills: formData.skills
+        };
+        await recruiterApi.createJob(payload);
+        showToast('Job posted successfully!', 'success');
+        setTimeout(() => navigate('/recruiter/dashboard'), 1500);
+    } catch (error) {
+        showToast('Failed to post job. Please try again.', 'error');
+        console.error(error);
+    } finally {
+        setLoading(false);
+    }
   };
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6 flex items-center gap-2"><Briefcase className="w-6 h-6 text-brand-600" /> Post a New Job</h1>
+    <div className="p-6 max-w-4xl mx-auto space-y-6">
+      <h1 className="text-3xl font-bold text-slate-800 flex items-center gap-2">
+        <Briefcase className="w-8 h-8 text-brand-600" /> Post a New Job
+      </h1>
       
-      <form onSubmit={handlePostJob} className="bg-white rounded-lg shadow-sm border border-slate-200 p-6 space-y-6">
+      <form onSubmit={handlePostJob} className="bg-white rounded-xl shadow-md border border-slate-200 p-8 space-y-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Job Title</label>
-            <input type="text" className="w-full border-slate-300 rounded-md p-2 border" placeholder="Software Engineer" required />
+            <label className="block text-sm font-semibold text-slate-700 mb-2">Job Title</label>
+            <input type="text" name="title" value={formData.title} onChange={handleChange} className="w-full border-slate-300 rounded-md p-2.5 border focus:ring-brand-500 focus:border-brand-500" placeholder="Software Engineer" required />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Job Type</label>
-            <select className="w-full border-slate-300 rounded-md p-2 border" required>
+            <label className="block text-sm font-semibold text-slate-700 mb-2">Job Type</label>
+            <select name="type" value={formData.type} onChange={handleChange} className="w-full border-slate-300 rounded-md p-2.5 border focus:ring-brand-500 focus:border-brand-500" required>
               <option>Full-time</option>
               <option>Internship</option>
               <option>Contract</option>
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Location</label>
+            <label className="block text-sm font-semibold text-slate-700 mb-2">Location</label>
             <div className="flex relative">
-              <span className="absolute left-3 top-2.5 text-slate-400"><MapPin size={18} /></span>
-              <input type="text" className="w-full border-slate-300 rounded-md p-2 pl-10 border" placeholder="e.g. Remote, NY" required />
+              <span className="absolute left-3 top-3 text-slate-400"><MapPin size={18} /></span>
+              <input type="text" name="location" value={formData.location} onChange={handleChange} className="w-full border-slate-300 rounded-md p-2.5 pl-10 border focus:ring-brand-500 focus:border-brand-500" placeholder="e.g. Remote, NY" required />
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Package (LPA)</label>
+            <label className="block text-sm font-semibold text-slate-700 mb-2">CTC / Package (LPA)</label>
             <div className="flex relative">
-              <span className="absolute left-3 top-2.5 text-slate-400"><DollarSign size={18} /></span>
-              <input type="number" className="w-full border-slate-300 rounded-md p-2 pl-10 border" placeholder="e.g. 12" required />
+              <span className="absolute left-3 top-3 text-slate-400"><IndianRupee size={18} /></span>
+              <input type="number" step="0.1" name="ctc" value={formData.ctc} onChange={handleChange} className="w-full border-slate-300 rounded-md p-2.5 pl-10 border focus:ring-brand-500 focus:border-brand-500" placeholder="e.g. 12.5" required />
             </div>
+          </div>
+          <div className="md:col-span-2">
+            <label className="block text-sm font-semibold text-slate-700 mb-2">Application Deadline</label>
+            <input type="date" name="deadline" value={formData.deadline} onChange={handleChange} className="w-full border-slate-300 rounded-md p-2.5 border focus:ring-brand-500 focus:border-brand-500" required />
           </div>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Description</label>
-          <textarea rows={4} className="w-full border-slate-300 rounded-md p-2 border" placeholder="Job responsibilities..." required></textarea>
-        </div>
-
-        <div className="border-t border-slate-200 pt-6">
-          <h2 className="text-lg font-semibold mb-4">Eligibility Criteria</h2>
+        <div className="border-t border-slate-200 pt-8">
+          <h2 className="text-xl font-bold text-slate-800 mb-6">Eligibility & Requirements</h2>
           
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-slate-700 mb-2">Eligible Branches</label>
-            <div className="flex flex-wrap gap-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-2">Minimum CGPA</label>
+              <input type="number" step="0.1" name="minCgpa" value={formData.minCgpa} onChange={handleChange} className="w-full border-slate-300 rounded-md p-2.5 border focus:ring-brand-500 focus:border-brand-500" placeholder="e.g. 7.5" required />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-2">Maximum Allowed Backlogs</label>
+              <input type="number" name="maxBacklogs" value={formData.maxBacklogs} onChange={handleChange} className="w-full border-slate-300 rounded-md p-2.5 border focus:ring-brand-500 focus:border-brand-500" placeholder="e.g. 0" required />
+            </div>
+          </div>
+
+          <div className="mb-6">
+            <label className="block text-sm font-semibold text-slate-700 mb-3">Eligible Branches</label>
+            <div className="flex flex-wrap gap-3">
               {['CSE', 'IT', 'ECE', 'EEE', 'MECH', 'CIVIL'].map(branch => (
                 <button
-                  key={branch}
                   type="button"
+                  key={branch}
                   onClick={() => toggleBranch(branch)}
-                  className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                  className={`px-4 py-2 rounded-full border text-sm font-medium transition-colors ${
                     branches.includes(branch) 
-                      ? 'bg-brand-100 text-brand-700 border-brand-200 border'
-                      : 'bg-slate-100 text-slate-600 border-slate-200 border hover:bg-slate-200'
+                      ? 'bg-brand-50 border-brand-500 text-brand-700'
+                      : 'bg-white border-slate-300 text-slate-600 hover:border-brand-300'
                   }`}
                 >
+                  {branches.includes(branch) && <CheckCircle className="w-4 h-4 inline-block mr-1 -mt-0.5" />}
                   {branch}
                 </button>
               ))}
             </div>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Minimum CGPA</label>
-              <input type="number" step="0.1" className="w-full border-slate-300 rounded-md p-2 border" placeholder="e.g. 7.5" required />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Maximum Active Backlogs</label>
-              <input type="number" className="w-full border-slate-300 rounded-md p-2 border" placeholder="e.g. 0" required />
-            </div>
-          </div>
         </div>
 
-        <div className="bg-slate-50 p-4 rounded-md border border-slate-200 flex flex-wrap gap-3 items-center text-sm text-slate-600">
-          <span className="font-semibold text-slate-800 mr-2">Preview Eligibility:</span>
-          {branches.length > 0 ? (
-            branches.map(b => <span key={b} className="bg-brand-100 text-brand-700 px-2 py-0.5 rounded text-xs">{b}</span>)
-          ) : (
-            <span className="italic">No branches selected</span>
-          )}
-          <span className="flex items-center gap-1"><CheckCircle size={14} className="text-green-500" /> Min CGPA: 7.5</span>
-          <span className="flex items-center gap-1"><CheckCircle size={14} className="text-green-500" /> Max Backlogs: 0</span>
+        <div className="border-t border-slate-200 pt-8">
+            <label className="block text-sm font-semibold text-slate-700 mb-2">Job Description</label>
+            <textarea name="description" value={formData.description} onChange={handleChange} rows={5} className="w-full border-slate-300 rounded-md p-3 border focus:ring-brand-500 focus:border-brand-500" placeholder="Provide details about the role..."></textarea>
         </div>
 
-        <div className="flex justify-end gap-3 pt-4">
-          <button type="button" className="px-4 py-2 border border-slate-300 rounded-md text-slate-700 hover:bg-slate-50 font-medium">Cancel</button>
-          <button type="submit" className="px-4 py-2 bg-brand-600 text-white rounded-md hover:bg-brand-700 font-medium flex items-center gap-2">
-            <Plus size={18} /> Post Job
+        <div className="pt-4 flex justify-end gap-3">
+          <button type="button" onClick={() => navigate(-1)} className="px-6 py-2.5 border border-slate-300 text-slate-700 font-medium rounded-lg hover:bg-slate-50 transition-colors">
+            Cancel
+          </button>
+          <button type="submit" disabled={loading || branches.length === 0} className="px-6 py-2.5 bg-brand-600 text-white font-medium rounded-lg hover:bg-brand-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+            {loading ? 'Posting...' : <><Plus size={18} /> Post Job</>}
           </button>
         </div>
       </form>
+      
+      {toast && (
+        <div className={`fixed bottom-4 right-4 px-4 py-2 rounded-lg text-white shadow-lg ${toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'}`}>
+            {toast.message}
+        </div>
+      )}
     </div>
   );
 }

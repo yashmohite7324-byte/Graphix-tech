@@ -1,0 +1,10 @@
+# Security & Environment variables
+.env
+*.env
+application-local.properties
+
+# Build & IDE
+target/
+.idea/
+*.iml
+*.log

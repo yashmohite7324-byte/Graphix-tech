@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { studentApi } from '../../api';
 import { PageLoader } from '../../components/ui';
 import {
-  User, BookOpen, Award, Briefcase,
+  User, BookOpen,
   CheckCircle, Loader2, Upload, Star
 } from 'lucide-react';
 
@@ -26,6 +26,10 @@ export default function StudentProfilePage() {
   const [skills, setSkills] = useState<string[]>([]);
   const [customSkill, setCustomSkill] = useState('');
 
+  const [presignedUrls, setPresignedUrls] = useState({ photo: '', resume: '' });
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [uploadingResume, setUploadingResume] = useState(false);
+
   const { data: profileRes, isLoading } = useQuery({
     queryKey: ['student-profile'],
     queryFn: () => studentApi.getProfile(),
@@ -44,8 +48,40 @@ export default function StudentProfilePage() {
         resumeUrl: p.resumeUrl || '',
         photoUrl: p.photoUrl || '',
       });
+      setPresignedUrls({
+        photo: p.presignedPhotoUrl || p.photoUrl || '',
+        resume: p.presignedResumeUrl || p.resumeUrl || '',
+      });
     }
   }, [profileRes]);
+
+  const photoUploadMutation = useMutation({
+    mutationFn: (file: File) => studentApi.uploadPhoto(file),
+    onMutate: () => setUploadingPhoto(true),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['student-profile'] });
+      setUploadingPhoto(false);
+    },
+    onError: (err: any) => {
+      setUploadingPhoto(false);
+      const serverMsg = err.response?.data?.message || err.message;
+      alert('Failed to upload photo to S3. Error: ' + serverMsg + '\n\nDid you STOP and RESTART the backend in IntelliJ to apply the new AWS keys?');
+    },
+  });
+
+  const resumeUploadMutation = useMutation({
+    mutationFn: (file: File) => studentApi.uploadResume(file),
+    onMutate: () => setUploadingResume(true),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['student-profile'] });
+      setUploadingResume(false);
+    },
+    onError: (err: any) => {
+      setUploadingResume(false);
+      const serverMsg = err.response?.data?.message || err.message;
+      alert('Failed to upload resume to S3. Error: ' + serverMsg + '\n\nDid you STOP and RESTART the backend in IntelliJ to apply the new AWS keys?');
+    },
+  });
 
   const updateMutation = useMutation({
     mutationFn: (data: any) => studentApi.updateProfile(data),
@@ -69,9 +105,9 @@ export default function StudentProfilePage() {
   const handleSave = () => {
     updateMutation.mutate({
       ...form,
-      batchYear: parseInt(form.batchYear),
-      cgpa: parseFloat(form.cgpa),
-      backlogCount: parseInt(form.backlogCount),
+      batchYear: form.batchYear ? parseInt(form.batchYear) : null,
+      cgpa: form.cgpa ? parseFloat(form.cgpa) : null,
+      backlogCount: form.backlogCount ? parseInt(form.backlogCount) : null,
     });
   };
 
@@ -89,23 +125,24 @@ export default function StudentProfilePage() {
   ];
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-start justify-between">
+    <div className="space-y-6 max-w-7xl mx-auto p-4 md:p-6">
+      {/* Header with attractive gradient */}
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between bg-gradient-to-r from-brand-600 to-indigo-600 rounded-2xl p-6 md:p-8 text-white shadow-xl">
         <div>
-          <h1>My Profile</h1>
-          <p className="text-slate-500 text-sm mt-1">
+          <h1 className="text-3xl font-bold">My Profile</h1>
+          <p className="text-brand-100 text-sm md:text-base mt-2 opacity-90 max-w-xl">
             Keep your profile updated to improve job recommendations.
           </p>
         </div>
         <button
           onClick={handleSave}
           disabled={updateMutation.isPending}
-          className="btn-primary"
+          className="mt-4 md:mt-0 bg-white text-brand-600 px-6 py-2.5 rounded-xl font-bold hover:bg-brand-50 transition-colors flex items-center gap-2 shadow-sm"
         >
           {updateMutation.isPending
-            ? <><Loader2 size={15} className="animate-spin" /> Saving...</>
+            ? <><Loader2 size={18} className="animate-spin" /> Saving...</>
             : saved
-            ? <><CheckCircle size={15} /> Saved!</>
+            ? <><CheckCircle size={18} /> Saved!</>
             : 'Save Profile'
           }
         </button>
@@ -162,13 +199,29 @@ export default function StudentProfilePage() {
 
             {/* Avatar */}
             <div className="flex items-center gap-4 mb-6">
-              <div className="w-20 h-20 rounded-2xl bg-brand-100 flex items-center justify-center text-brand-600 font-bold text-3xl">
-                {form.fullName?.[0]?.toUpperCase() || '?'}
-              </div>
+              {presignedUrls.photo ? (
+                <img src={presignedUrls.photo} alt="Profile" className="w-20 h-20 rounded-2xl object-cover border border-slate-200 shadow-sm" />
+              ) : (
+                <div className="w-20 h-20 rounded-2xl bg-brand-100 flex items-center justify-center text-brand-600 font-bold text-3xl shadow-sm">
+                  {form.fullName?.[0]?.toUpperCase() || '?'}
+                </div>
+              )}
               <div>
                 <p className="text-sm font-semibold text-slate-900">{form.fullName || 'Your Name'}</p>
                 <p className="text-xs text-slate-500 mt-0.5">{form.branch || 'Branch'} • {form.batchYear || 'Year'}</p>
-                <button className="text-xs text-brand-600 hover:underline mt-1">Upload photo</button>
+                
+                <label className="inline-flex items-center gap-1.5 cursor-pointer text-xs font-semibold text-brand-600 hover:text-brand-700 mt-2 bg-brand-50 px-3 py-1.5 rounded-lg border border-brand-200 transition-colors">
+                  {uploadingPhoto ? <Loader2 size={13} className="animate-spin" /> : <Upload size={13} />}
+                  {uploadingPhoto ? 'Uploading to S3...' : 'Upload Profile Photo'}
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    className="hidden" 
+                    onChange={(e) => {
+                      if (e.target.files?.[0]) photoUploadMutation.mutate(e.target.files[0]);
+                    }} 
+                  />
+                </label>
               </div>
             </div>
 
@@ -287,35 +340,46 @@ export default function StudentProfilePage() {
         {activeTab === 'resume' && (
           <div className="space-y-4">
             <h3 className="text-base font-semibold text-slate-900 mb-4">Resume & Documents</h3>
-            <div>
-              <label className="label">Resume URL</label>
-              <input className="input" placeholder="Paste Google Drive / OneDrive link to your resume PDF"
-                value={form.resumeUrl}
-                onChange={(e) => setForm({ ...form, resumeUrl: e.target.value })} />
-              <p className="text-xs text-slate-400 mt-1">
-                Upload your resume to Google Drive, set sharing to "Anyone with link", then paste the link here.
-                S3 direct upload coming soon.
-              </p>
+            
+            {/* S3 File Upload Dropzone */}
+            <div className="p-6 border-2 border-dashed border-brand-200 hover:border-brand-400 bg-brand-50/30 rounded-2xl text-center transition-colors">
+              <Upload size={32} className="text-brand-500 mx-auto mb-2" />
+              <p className="text-sm font-semibold text-slate-800">Upload Resume (PDF, DOCX)</p>
+              <p className="text-xs text-slate-500 mt-1 mb-4">Files are uploaded directly to S3 bucket <code className="bg-slate-200 px-1 py-0.5 rounded text-[11px]">graphix-techhire-2026</code></p>
+              
+              <label className="inline-flex items-center gap-2 cursor-pointer btn-primary shadow-md hover:shadow-lg transition-all">
+                {uploadingResume ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
+                {uploadingResume ? 'Uploading to AWS S3...' : 'Select Resume File'}
+                <input 
+                  type="file" 
+                  accept=".pdf,.doc,.docx" 
+                  className="hidden" 
+                  onChange={(e) => {
+                    if (e.target.files?.[0]) resumeUploadMutation.mutate(e.target.files[0]);
+                  }} 
+                />
+              </label>
             </div>
 
-            {form.resumeUrl && (
-              <div className="flex items-center gap-3 p-4 bg-green-50 border border-green-200 rounded-xl">
-                <CheckCircle size={18} className="text-green-600" />
-                <div>
-                  <p className="text-sm font-medium text-green-800">Resume linked</p>
-                  <a href={form.resumeUrl} target="_blank" rel="noreferrer"
-                    className="text-xs text-green-600 hover:underline">
-                    View resume →
-                  </a>
+            {(presignedUrls.resume || form.resumeUrl) && (
+              <div className="flex items-center justify-between p-4 bg-green-50 border border-green-200 rounded-xl">
+                <div className="flex items-center gap-3">
+                  <CheckCircle size={20} className="text-green-600" />
+                  <div>
+                    <p className="text-sm font-semibold text-green-900">Resume uploaded & stored in S3</p>
+                    <p className="text-xs text-green-700 font-mono mt-0.5 truncate max-w-md">Key: {form.resumeUrl}</p>
+                  </div>
                 </div>
+                <a 
+                  href={presignedUrls.resume || form.resumeUrl} 
+                  target="_blank" 
+                  rel="noreferrer"
+                  className="btn-secondary text-xs flex items-center gap-1 bg-white text-green-700 border-green-300 hover:bg-green-100 shadow-sm"
+                >
+                  View Presigned Resume →
+                </a>
               </div>
             )}
-
-            <div className="mt-4 p-4 border-2 border-dashed border-slate-200 rounded-xl text-center">
-              <Upload size={24} className="text-slate-300 mx-auto mb-2" />
-              <p className="text-sm text-slate-500">Direct resume upload (PDF)</p>
-              <p className="text-xs text-slate-400 mt-1">Coming soon — S3 upload integration</p>
-            </div>
           </div>
         )}
       </div>

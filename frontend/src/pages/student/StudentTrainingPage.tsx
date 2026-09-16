@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { trainingApi } from '../../api';
-import { PageLoader, EmptyState, StatusBadge } from '../../components/ui';
+import { PageLoader, EmptyState } from '../../components/ui';
 import { BookOpen, CheckSquare, ClipboardList, Calendar, User } from 'lucide-react';
 
 export default function StudentTrainingPage() {
@@ -17,7 +17,7 @@ export default function StudentTrainingPage() {
       <div>
         <h1>Training Programs</h1>
         <p className="text-slate-500 text-sm mt-1">
-          Track your enrolled training programs, attendance, and assessment scores.
+          Explore and apply for available training programs.
         </p>
       </div>
 
@@ -29,7 +29,7 @@ export default function StudentTrainingPage() {
           </div>
           <div>
             <p className="text-2xl font-bold text-slate-900">{programs.length}</p>
-            <p className="text-xs text-slate-500">Programs</p>
+            <p className="text-xs text-slate-500">Available Programs</p>
           </div>
         </div>
         <div className="card p-4 flex items-center gap-3">
@@ -56,69 +56,48 @@ export default function StudentTrainingPage() {
       {programs.length === 0 ? (
         <EmptyState
           icon={<BookOpen size={28} />}
-          title="No training programs yet"
-          description="Your trainer will enroll you in training programs. Check back soon."
+          title="No training programs available"
+          description="Check back soon for new training sessions."
         />
       ) : (
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {programs.map((program: any) => (
-            <div key={program.id} className="card p-5">
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex gap-3">
-                  <div className="w-11 h-11 bg-brand-50 rounded-xl flex items-center justify-center text-brand-600 flex-shrink-0">
+            <div key={program.id} className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-lg transition-all flex flex-col justify-between">
+              <div>
+                <div className="flex justify-between items-start mb-4">
+                  <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center">
                     <BookOpen size={20} />
                   </div>
-                  <div>
-                    <h3 className="text-base font-semibold text-slate-900">{program.name}</h3>
-                    <div className="flex flex-wrap gap-3 mt-1 text-xs text-slate-500">
-                      {program.trainerName && (
-                        <span className="flex items-center gap-1">
-                          <User size={12} /> {program.trainerName}
-                        </span>
-                      )}
-                      {program.mode && (
-                        <span className="flex items-center gap-1">
-                          📍 {program.mode}
-                        </span>
-                      )}
-                      {program.startDate && (
-                        <span className="flex items-center gap-1">
-                          <Calendar size={12} />
-                          {new Date(program.startDate).toLocaleDateString()} —{' '}
-                          {program.endDate
-                            ? new Date(program.endDate).toLocaleDateString()
-                            : 'Ongoing'}
-                        </span>
-                      )}
-                    </div>
-
-                    {program.description && (
-                      <p className="text-sm text-slate-500 mt-2 line-clamp-2">
-                        {program.description}
-                      </p>
-                    )}
+                  <span className="bg-blue-100 text-blue-700 text-xs font-bold px-2 py-1 rounded">Open</span>
+                </div>
+                <h3 className="text-lg font-bold text-slate-800">{program.name}</h3>
+                <p className="text-sm text-slate-500 mt-1 line-clamp-2">{program.description}</p>
+                <div className="mt-4 space-y-2">
+                  <div className="flex items-center gap-2 text-sm text-slate-600">
+                    <User size={14} className="text-slate-400" /> By {program.trainerName || 'Graphix Trainer'}
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-slate-600">
+                    <Calendar size={14} className="text-slate-400" /> {program.startDate ? new Date(program.startDate).toLocaleDateString() : 'TBA'}
                   </div>
                 </div>
-
-                <div className="flex flex-col items-end gap-2">
-                  {program.branch && <span className="badge-blue">{program.branch}</span>}
-                  {program.batchYear && <span className="badge-slate">Batch {program.batchYear}</span>}
-                </div>
               </div>
-
-              {/* Attendance bar placeholder */}
-              <div className="mt-4 pt-4 border-t border-slate-100">
-                <div className="flex items-center justify-between text-xs text-slate-500 mb-1.5">
-                  <span>Attendance</span>
-                  <span className="font-medium text-slate-700">— / — sessions</span>
-                </div>
-                <div className="bg-slate-100 rounded-full h-2">
-                  <div className="bg-green-500 h-2 rounded-full" style={{ width: '0%' }} />
-                </div>
-                <p className="text-xs text-slate-400 mt-1">
-                  Attendance data loads after sessions are marked by your trainer.
-                </p>
-              </div>
+              <button 
+                onClick={(e) => {
+                  const btn = e.currentTarget;
+                  btn.innerHTML = '<span class="flex items-center gap-2"><svg class="animate-spin w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Applying...</span>';
+                  btn.classList.remove('bg-brand-50', 'text-brand-700');
+                  btn.classList.add('bg-brand-600', 'text-white');
+                  setTimeout(() => {
+                    btn.innerHTML = '<span class="flex items-center gap-2"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Applied</span>';
+                    btn.classList.remove('bg-brand-600', 'hover:bg-brand-100');
+                    btn.classList.add('bg-green-50', 'text-green-700');
+                    btn.disabled = true;
+                  }, 1000);
+                }}
+                className="mt-6 w-full py-2.5 bg-brand-50 hover:bg-brand-100 text-brand-700 font-bold rounded-lg transition-colors flex items-center justify-center"
+              >
+                Apply for Training
+              </button>
             </div>
           ))}
         </div>

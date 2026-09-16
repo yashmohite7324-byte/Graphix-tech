@@ -1,11 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   LayoutDashboard, Briefcase, Users, Bell, LogOut,
   GraduationCap, Building2, ClipboardList, BookOpen,
   ChevronLeft, ChevronRight, FileText, BarChart2,
-  Calendar, CheckSquare, Settings, Menu
+  Calendar, CheckSquare, Settings, Menu, Moon, Sun
 } from 'lucide-react';
 
 interface NavItem {
@@ -79,10 +79,27 @@ const roleLabel: Record<string, string> = {
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuth();
-  const location = useLocation();
   const navigate = useNavigate();
+  const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    return (localStorage.getItem('theme') as 'light' | 'dark') || 'light';
+  });
+
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(theme === 'light' ? 'dark' : 'light');
+  };
 
   const navItems = navByRole[user?.role || 'STUDENT'] || [];
 
@@ -180,14 +197,23 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       {/* Main content */}
       <div className="flex-1 flex flex-col overflow-hidden relative">
         {/* Top bar */}
-        <div className="bg-white/80 backdrop-blur-md border-b border-slate-200 px-4 md:px-6 py-3 flex items-center gap-3 z-10 sticky top-0">
+        <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 px-4 md:px-6 py-3 flex items-center gap-3 z-10 sticky top-0 transition-colors">
           <button
-            className="md:hidden p-1.5 rounded-lg hover:bg-slate-100 transition-colors"
+            className="md:hidden p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
             onClick={() => setMobileOpen(true)}
           >
-            <Menu size={20} className="text-slate-600" />
+            <Menu size={20} className="text-slate-600 dark:text-slate-300" />
           </button>
           <div className="flex-1" />
+          
+          <button 
+            onClick={toggleTheme}
+            className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors"
+            title="Toggle theme"
+          >
+            {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
+          </button>
+
           <div className="flex items-center gap-2 hover:scale-105 transition-transform cursor-pointer">
             <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-brand-500 to-indigo-500 flex items-center justify-center text-white text-xs font-bold shadow-md">
               {(user?.companyName || user?.name || user?.email || 'U')[0].toUpperCase()}

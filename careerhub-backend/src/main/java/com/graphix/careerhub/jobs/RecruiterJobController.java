@@ -35,6 +35,12 @@ public class RecruiterJobController {
         return ApiResponse.success(jobService.createJob(request, recruiter.getCompany()));
     }
 
+    @GetMapping
+    public ApiResponse<java.util.List<Job>> getMyJobs(Authentication authentication) {
+        RecruiterProfile recruiter = getRecruiterProfile(authentication.getName());
+        return ApiResponse.success(jobService.getJobsByCompanyId(recruiter.getCompany().getId()));
+    }
+
     private RecruiterProfile getRecruiterProfile(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));

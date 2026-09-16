@@ -27,8 +27,15 @@ public class AuthController {
         return ApiResponse.success(authService.register(request));
     }
 
+    @PostMapping("/otp/send")
+    public ApiResponse<String> sendOtp(@RequestBody java.util.Map<String, String> body) {
+        String identifier = body.get("identifier");
+        if (identifier == null) identifier = body.get("email");
+        return ApiResponse.success(authService.sendOtp(identifier));
+    }
+
     @PostMapping("/otp/verify")
-    public ApiResponse<String> verifyOtp(@Valid @RequestBody OtpVerifyRequest request) {
+    public ApiResponse<AuthResponse> verifyOtp(@Valid @RequestBody OtpVerifyRequest request) {
         return ApiResponse.success(authService.verifyOtp(request));
     }
 

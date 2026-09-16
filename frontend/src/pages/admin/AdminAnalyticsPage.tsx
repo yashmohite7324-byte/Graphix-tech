@@ -1,4 +1,3 @@
-import React from 'react';
 import { 
     AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer,
     BarChart, Bar, Legend,
@@ -44,106 +43,114 @@ export default function AdminAnalyticsPage() {
     ];
 
     return (
-        <div className="p-6 space-y-6">
-            <h1 className="text-2xl font-bold text-slate-200">Analytics Dashboard</h1>
+        <div className="p-6 space-y-6 max-w-7xl mx-auto">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between bg-gradient-to-r from-brand-600 to-indigo-600 rounded-2xl p-6 md:p-8 text-white shadow-xl">
+                <div>
+                    <h1 className="text-3xl font-bold">Analytics Dashboard</h1>
+                    <p className="text-brand-100 text-sm md:text-base mt-2 opacity-90 max-w-xl">
+                        Comprehensive overview of placement statistics and trends.
+                    </p>
+                </div>
+            </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Area Chart - Monthly Trend */}
-                <div className="bg-slate-800 p-4 rounded-lg border border-slate-700 h-80 flex flex-col">
-                    <h2 className="text-lg font-medium text-slate-300 mb-4">Placement Trends</h2>
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 h-96 flex flex-col hover:shadow-md transition-shadow">
+                    <h2 className="text-lg font-bold text-slate-800 mb-6">Placement Trends</h2>
                     <div className="flex-1 min-h-0">
                         <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={monthlyData}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                                <XAxis dataKey="name" stroke="#94a3b8" />
-                                <YAxis stroke="#94a3b8" />
-                                <RechartsTooltip contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#f8fafc' }} />
-                                <Area type="monotone" dataKey="placements" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.2} />
+                            <AreaChart data={monthlyData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                                <XAxis dataKey="name" stroke="#64748b" tick={{fill: '#64748b'}} />
+                                <YAxis stroke="#64748b" tick={{fill: '#64748b'}} />
+                                <RechartsTooltip contentStyle={{ backgroundColor: '#ffffff', borderColor: '#e2e8f0', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+                                <Area type="monotone" dataKey="placements" stroke="#4f46e5" strokeWidth={3} fill="#4f46e5" fillOpacity={0.1} />
                             </AreaChart>
                         </ResponsiveContainer>
                     </div>
                 </div>
 
                 {/* Grouped Bar Chart - Branch-wise */}
-                <div className="bg-slate-800 p-4 rounded-lg border border-slate-700 h-80 flex flex-col">
-                    <h2 className="text-lg font-medium text-slate-300 mb-4">Branch-wise Offers</h2>
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 h-96 flex flex-col hover:shadow-md transition-shadow">
+                    <h2 className="text-lg font-bold text-slate-800 mb-6">Branch-wise Performance</h2>
                     <div className="flex-1 min-h-0">
                         <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={branchData}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                                <XAxis dataKey="name" stroke="#94a3b8" />
-                                <YAxis stroke="#94a3b8" />
-                                <RechartsTooltip contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#f8fafc' }} />
-                                <Legend wrapperStyle={{ color: '#94a3b8' }} />
-                                <Bar dataKey="students" fill="#475569" name="Total Students" />
-                                <Bar dataKey="offers" fill="#10b981" name="Offers Made" />
+                            <BarChart data={branchData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                                <XAxis dataKey="name" stroke="#64748b" tick={{fill: '#64748b'}} />
+                                <YAxis stroke="#64748b" tick={{fill: '#64748b'}} />
+                                <RechartsTooltip contentStyle={{ backgroundColor: '#ffffff', borderColor: '#e2e8f0', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} cursor={{fill: '#f8fafc'}} />
+                                <Legend wrapperStyle={{ paddingTop: '20px' }} />
+                                <Bar dataKey="students" fill="#94a3b8" radius={[4, 4, 0, 0]} name="Total Students" />
+                                <Bar dataKey="offers" fill="#10b981" radius={[4, 4, 0, 0]} name="Offers Made" />
                             </BarChart>
                         </ResponsiveContainer>
                     </div>
                 </div>
 
                 {/* Horizontal Bar Chart - CTC Distribution */}
-                <div className="bg-slate-800 p-4 rounded-lg border border-slate-700 h-80 flex flex-col">
-                    <h2 className="text-lg font-medium text-slate-300 mb-4">CTC Distribution</h2>
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 h-96 flex flex-col hover:shadow-md transition-shadow">
+                    <h2 className="text-lg font-bold text-slate-800 mb-6">CTC Distribution</h2>
                     <div className="flex-1 min-h-0">
                         <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={ctcData} layout="vertical" margin={{ left: 20 }}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                                <XAxis type="number" stroke="#94a3b8" />
-                                <YAxis dataKey="name" type="category" stroke="#94a3b8" />
-                                <RechartsTooltip contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#f8fafc' }} />
-                                <Bar dataKey="count" fill="#8b5cf6" />
+                            <BarChart data={ctcData} layout="vertical" margin={{ top: 10, right: 30, left: 20, bottom: 0 }}>
+                                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
+                                <XAxis type="number" stroke="#64748b" tick={{fill: '#64748b'}} />
+                                <YAxis dataKey="name" type="category" stroke="#64748b" tick={{fill: '#64748b'}} />
+                                <RechartsTooltip contentStyle={{ backgroundColor: '#ffffff', borderColor: '#e2e8f0', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} cursor={{fill: '#f8fafc'}} />
+                                <Bar dataKey="count" fill="#f59e0b" radius={[0, 4, 4, 0]} name="Number of Students" barSize={32} />
                             </BarChart>
                         </ResponsiveContainer>
                     </div>
                 </div>
 
-                {/* Donut Chart - Sector */}
-                <div className="bg-slate-800 p-4 rounded-lg border border-slate-700 h-80 flex flex-col">
-                    <h2 className="text-lg font-medium text-slate-300 mb-4">Placements by Sector</h2>
-                    <div className="flex-1 min-h-0 flex items-center justify-center">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <PieChart>
-                                <Pie
-                                    data={sectorData}
-                                    cx="50%"
-                                    cy="50%"
-                                    innerRadius={60}
-                                    outerRadius={80}
-                                    fill="#8884d8"
-                                    paddingAngle={5}
-                                    dataKey="value"
-                                >
-                                    {sectorData.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                    ))}
-                                </Pie>
-                                <RechartsTooltip contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#f8fafc' }} />
-                                <Legend />
-                            </PieChart>
-                        </ResponsiveContainer>
-                    </div>
-                </div>
-            </div>
-
-            {/* Top Companies Progress Bars */}
-            <div className="bg-slate-800 p-6 rounded-lg border border-slate-700">
-                <h2 className="text-lg font-medium text-slate-300 mb-4">Top Recruiters</h2>
-                <div className="space-y-4">
-                    {topCompanies.map(c => (
-                        <div key={c.name} className="space-y-1">
-                            <div className="flex justify-between text-sm">
-                                <span className="font-medium text-slate-200">{c.name}</span>
-                                <span className="text-slate-400">{c.offers} Offers</span>
-                            </div>
-                            <div className="w-full bg-slate-900 rounded-full h-2.5 border border-slate-700">
-                                <div 
-                                    className="bg-brand-500 h-2.5 rounded-full" 
-                                    style={{ width: `${(c.offers / c.max) * 100}%` }}
-                                ></div>
+                {/* Donut & Progress Bars combined */}
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 h-96 flex flex-col hover:shadow-md transition-shadow">
+                    <h2 className="text-lg font-bold text-slate-800 mb-6">Top Companies & Sectors</h2>
+                    <div className="flex-1 min-h-0 flex flex-col md:flex-row gap-6">
+                        <div className="flex-1">
+                            <h3 className="text-sm font-medium text-slate-500 mb-4 uppercase tracking-wider">Top Recruiters</h3>
+                            <div className="space-y-4">
+                                {topCompanies.map((tc, idx) => (
+                                    <div key={idx}>
+                                        <div className="flex justify-between text-sm mb-1 text-slate-700">
+                                            <span className="font-medium">{tc.name}</span>
+                                            <span className="font-bold">{tc.offers} Offers</span>
+                                        </div>
+                                        <div className="w-full bg-slate-100 rounded-full h-2.5">
+                                            <div className="bg-indigo-500 h-2.5 rounded-full" style={{ width: `${(tc.offers / tc.max) * 100}%` }}></div>
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
                         </div>
-                    ))}
+                        <div className="flex-1 flex flex-col items-center justify-center">
+                            <ResponsiveContainer width="100%" height={200}>
+                                <PieChart>
+                                    <Pie
+                                        data={sectorData}
+                                        innerRadius={60}
+                                        outerRadius={80}
+                                        paddingAngle={5}
+                                        dataKey="value"
+                                    >
+                                        {sectorData.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                        ))}
+                                    </Pie>
+                                    <RechartsTooltip contentStyle={{ backgroundColor: '#ffffff', borderColor: '#e2e8f0', borderRadius: '8px' }} />
+                                </PieChart>
+                            </ResponsiveContainer>
+                            <div className="flex flex-wrap justify-center gap-3 mt-2">
+                                {sectorData.map((entry, index) => (
+                                    <div key={index} className="flex items-center text-xs text-slate-600">
+                                        <div className="w-3 h-3 rounded-full mr-1.5" style={{ backgroundColor: COLORS[index % COLORS.length] }}></div>
+                                        {entry.name}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

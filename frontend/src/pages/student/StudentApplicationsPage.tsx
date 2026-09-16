@@ -30,7 +30,6 @@ function StatusTimeline({ current }: { current: string }) {
       {STATUS_STEPS.map((step, idx) => {
         const done = idx < currentIdx;
         const active = idx === currentIdx;
-        const pending = idx > currentIdx;
 
         return (
           <div key={step} className="flex items-center gap-1">

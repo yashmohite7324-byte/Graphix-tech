@@ -19,6 +19,7 @@ public class Company extends BaseEntity {
     private String name;
     private String website;
     private String industry;
+    private String location;
 
     @Enumerated(EnumType.STRING)
     private VerificationStatus verificationStatus = VerificationStatus.PENDING;

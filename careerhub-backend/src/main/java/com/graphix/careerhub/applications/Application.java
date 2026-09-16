@@ -33,4 +33,6 @@ public class Application extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     private Status status = Status.APPLIED;
+
+    private Integer aiMatchScore; // AI Resume Score
 }

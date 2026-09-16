@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import AppLayout from './components/AppLayout';
+import AppLayout from './layouts/AppLayout';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 import StudentDashboard from './pages/student/StudentDashboard';
@@ -55,15 +55,26 @@ function ComingSoon({ title }: { title: string }) {
   );
 }
 
+import { ThemeProvider } from './context/ThemeContext';
+import SettingsPage from './pages/shared/SettingsPage';
+
 export default function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <BrowserRouter>
+    <ThemeProvider>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <BrowserRouter>
           <Routes>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/" element={<RoleRedirect />} />
+            
+            {/* Global Settings routes */}
+            <Route path="/admin/settings" element={<PrivateRoute allowedRoles={['PLACEMENT_ADMIN','SUPER_ADMIN']}><SettingsPage /></PrivateRoute>} />
+            <Route path="/student/settings" element={<PrivateRoute allowedRoles={['STUDENT']}><SettingsPage /></PrivateRoute>} />
+            <Route path="/recruiter/settings" element={<PrivateRoute allowedRoles={['RECRUITER']}><SettingsPage /></PrivateRoute>} />
+            <Route path="/trainer/settings" element={<PrivateRoute allowedRoles={['TRAINER']}><SettingsPage /></PrivateRoute>} />
+
             {/* Student Routes */}
             <Route path="/student/dashboard" element={<PrivateRoute allowedRoles={['STUDENT']}><StudentDashboard /></PrivateRoute>} />
             <Route path="/student/jobs" element={<PrivateRoute allowedRoles={['STUDENT']}><StudentJobsPage /></PrivateRoute>} />
@@ -105,5 +116,6 @@ export default function App() {
         </BrowserRouter>
       </AuthProvider>
     </QueryClientProvider>
+    </ThemeProvider>
   );
 }

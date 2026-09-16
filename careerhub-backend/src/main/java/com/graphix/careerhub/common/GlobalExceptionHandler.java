@@ -43,7 +43,12 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Object>> handleGeneral(Exception ex) {
+        ex.printStackTrace(); // Log it for sure
+        String errorDetails = ex.getMessage();
+        if (ex.getCause() != null) {
+            errorDetails += " | Cause: " + ex.getCause().getMessage();
+        }
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.error("Something went wrong: " + ex.getMessage()));
+                .body(ApiResponse.error("Internal Server Error: " + errorDetails));
     }
 }

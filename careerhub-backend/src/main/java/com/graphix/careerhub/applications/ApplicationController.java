@@ -50,4 +50,10 @@ public class ApplicationController {
         return ApiResponse.success(
                 applicationService.updateStatus(applicationId, request.getStatus(), authentication.getName()));
     }
+
+    @GetMapping("/admin/applications/all")
+    @PreAuthorize("hasAnyRole('PLACEMENT_ADMIN', 'SUPER_ADMIN')")
+    public ApiResponse<List<Application>> getAllApplicationsAdmin() {
+        return ApiResponse.success(applicationService.getAllApplications());
+    }
 }

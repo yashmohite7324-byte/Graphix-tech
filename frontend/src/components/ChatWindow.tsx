@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import api from '../../api';
+import api from '../api';
 import { Send, Loader2, MessageSquare } from 'lucide-react';
 
 // Install these: npm install @stomp/stompjs sockjs-client
@@ -55,7 +55,9 @@ export default function ChatWindow({
     const connect = async () => {
       try {
         // Dynamic import so the app doesn't crash if library not installed
+        // @ts-ignore
         const { Client } = await import('@stomp/stompjs');
+        // @ts-ignore
         const SockJS = (await import('sockjs-client')).default;
 
         client = new Client({

@@ -1,13 +1,10 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Search, Filter, Check, X, Building2, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { adminApi } from '../../api';
 
 export default function AdminCompaniesPage() {
-    const [companies, setCompanies] = useState([
-        { id: 1, name: 'TechNova', industry: 'Software', status: 'Pending', appliedDate: '2026-09-01' },
-        { id: 2, name: 'GlobalFin', industry: 'Finance', status: 'Approved', appliedDate: '2026-08-15' },
-        { id: 3, name: 'EcoSmart', industry: 'Energy', status: 'Rejected', appliedDate: '2026-08-20' },
-        { id: 4, name: 'DataSys', industry: 'Software', status: 'Pending', appliedDate: '2026-09-02' },
-    ]);
+    const [companies, setCompanies] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('All');
     const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
@@ -17,14 +14,49 @@ export default function AdminCompaniesPage() {
         setTimeout(() => setToast(null), 3000);
     };
 
-    const handleApprove = (id: number) => {
-        setCompanies(companies.map(c => c.id === id ? { ...c, status: 'Approved' } : c));
-        showToast('Company approved successfully', 'success');
+    const fetchCompanies = async () => {
+        try {
+            setLoading(true);
+            const res = await adminApi.getCompanies();
+            // Map backend fields to frontend table fields (verificationStatus -> status)
+            const mapped = res.data.data.map((c: any) => ({
+                ...c,
+                status: c.verificationStatus === 'APPROVED' ? 'Approved' : c.verificationStatus === 'REJECTED' ? 'Rejected' : 'Pending',
+                industry: c.industry || 'Unknown',
+                location: c.location || 'N/A',
+                appliedDate: c.createdAt ? new Date(c.createdAt).toLocaleDateString() : 'Just now'
+            }));
+            setCompanies(mapped);
+        } catch (error) {
+            console.error("Failed to fetch companies:", error);
+            showToast("Failed to load companies from backend", "error");
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const handleReject = (id: number) => {
-        setCompanies(companies.map(c => c.id === id ? { ...c, status: 'Rejected' } : c));
-        showToast('Company rejected', 'error');
+    useEffect(() => {
+        fetchCompanies();
+    }, []);
+
+    const handleApprove = async (id: number) => {
+        try {
+            await adminApi.approveCompany(id);
+            setCompanies(companies.map(c => c.id === id ? { ...c, status: 'Approved' } : c));
+            showToast('Company approved successfully', 'success');
+        } catch (error) {
+            showToast('Failed to approve company', 'error');
+        }
+    };
+
+    const handleReject = async (id: number) => {
+        try {
+            await adminApi.rejectCompany(id);
+            setCompanies(companies.map(c => c.id === id ? { ...c, status: 'Rejected' } : c));
+            showToast('Company rejected', 'error');
+        } catch (error) {
+            showToast('Failed to reject company', 'error');
+        }
     };
 
     const filteredCompanies = useMemo(() => {
@@ -43,49 +75,65 @@ export default function AdminCompaniesPage() {
     };
 
     return (
-        <div className="p-6 space-y-6">
-            <h1 className="text-2xl font-bold text-slate-200">Companies Management</h1>
+        <div className="p-6 space-y-6 max-w-7xl mx-auto">
+            {/* Header */}
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between bg-gradient-to-r from-brand-600 to-indigo-600 rounded-2xl p-6 md:p-8 text-white shadow-xl">
+                <div>
+                    <h1 className="text-3xl font-bold">Companies Management</h1>
+                    <p className="text-brand-100 text-sm md:text-base mt-2 opacity-90 max-w-xl">
+                        Review, approve, and manage recruiter accounts.
+                    </p>
+                </div>
+            </div>
             
             {/* Stats */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="bg-slate-800 p-4 rounded-lg shadow border border-slate-700 flex items-center space-x-4">
-                    <Building2 className="text-brand-500 w-8 h-8" />
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center space-x-4 hover:shadow-md transition-shadow">
+                    <div className="bg-brand-50 p-3 rounded-xl">
+                        <Building2 className="text-brand-600 w-8 h-8" />
+                    </div>
                     <div>
-                        <p className="text-sm text-slate-400">Total Companies</p>
-                        <p className="text-xl font-bold text-slate-200">{stats.total}</p>
+                        <p className="text-sm font-medium text-slate-500">Total Companies</p>
+                        <p className="text-2xl font-bold text-slate-800">{stats.total}</p>
                     </div>
                 </div>
-                <div className="bg-slate-800 p-4 rounded-lg shadow border border-slate-700 flex items-center space-x-4">
-                    <Clock className="text-yellow-500 w-8 h-8" />
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center space-x-4 hover:shadow-md transition-shadow">
+                    <div className="bg-amber-50 p-3 rounded-xl">
+                        <Clock className="text-amber-500 w-8 h-8" />
+                    </div>
                     <div>
-                        <p className="text-sm text-slate-400">Pending</p>
-                        <p className="text-xl font-bold text-slate-200">{stats.pending}</p>
+                        <p className="text-sm font-medium text-slate-500">Pending</p>
+                        <p className="text-2xl font-bold text-slate-800">{stats.pending}</p>
                     </div>
                 </div>
-                <div className="bg-slate-800 p-4 rounded-lg shadow border border-slate-700 flex items-center space-x-4">
-                    <CheckCircle className="text-green-500 w-8 h-8" />
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center space-x-4 hover:shadow-md transition-shadow">
+                    <div className="bg-green-50 p-3 rounded-xl">
+                        <CheckCircle className="text-green-500 w-8 h-8" />
+                    </div>
                     <div>
-                        <p className="text-sm text-slate-400">Approved</p>
-                        <p className="text-xl font-bold text-slate-200">{stats.approved}</p>
+                        <p className="text-sm font-medium text-slate-500">Approved</p>
+                        <p className="text-2xl font-bold text-slate-800">{stats.approved}</p>
                     </div>
                 </div>
-                <div className="bg-slate-800 p-4 rounded-lg shadow border border-slate-700 flex items-center space-x-4">
-                    <XCircle className="text-red-500 w-8 h-8" />
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center space-x-4 hover:shadow-md transition-shadow">
+                    <div className="bg-red-50 p-3 rounded-xl">
+                        <XCircle className="text-red-500 w-8 h-8" />
+                    </div>
                     <div>
-                        <p className="text-sm text-slate-400">Rejected</p>
-                        <p className="text-xl font-bold text-slate-200">{stats.rejected}</p>
+                        <p className="text-sm font-medium text-slate-500">Rejected</p>
+                        <p className="text-2xl font-bold text-slate-800">{stats.rejected}</p>
                     </div>
                 </div>
             </div>
 
             {/* Filters */}
-            <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-slate-800 p-4 rounded-lg border border-slate-700">
-                <div className="relative w-full md:w-96">
+            <div className="flex flex-col md:flex-row gap-4 items-center bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                <div className="relative w-full md:w-96 flex-grow">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                     <input 
                         type="text" 
-                        placeholder="Search by name or industry..." 
-                        className="w-full pl-10 pr-4 py-2 bg-slate-900 border border-slate-700 rounded-md text-slate-200 focus:outline-none focus:border-brand-500"
+                        placeholder="Search by company or industry..." 
+                        className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
@@ -93,7 +141,7 @@ export default function AdminCompaniesPage() {
                 <div className="flex items-center space-x-2 w-full md:w-auto">
                     <Filter className="w-5 h-5 text-slate-400" />
                     <select 
-                        className="bg-slate-900 border border-slate-700 rounded-md px-4 py-2 text-slate-200 focus:outline-none focus:border-brand-500"
+                        className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 min-w-[150px] transition-all"
                         value={statusFilter}
                         onChange={(e) => setStatusFilter(e.target.value)}
                     >
@@ -106,28 +154,34 @@ export default function AdminCompaniesPage() {
             </div>
 
             {/* Table */}
-            <div className="bg-slate-800 rounded-lg border border-slate-700 overflow-hidden">
-                <table className="w-full text-left text-sm text-slate-300">
-                    <thead className="bg-slate-900 text-slate-400 uppercase">
+            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+                <table className="w-full text-left text-sm text-slate-600">
+                    <thead className="bg-slate-50/50 text-slate-500 uppercase text-xs font-semibold tracking-wider">
                         <tr>
-                            <th className="px-6 py-4 font-medium">Company Name</th>
-                            <th className="px-6 py-4 font-medium">Industry</th>
-                            <th className="px-6 py-4 font-medium">Applied Date</th>
-                            <th className="px-6 py-4 font-medium">Status</th>
-                            <th className="px-6 py-4 font-medium text-right">Actions</th>
+                            <th className="px-6 py-4">Company Name</th>
+                            <th className="px-6 py-4">Industry</th>
+                            <th className="px-6 py-4">Location</th>
+                            <th className="px-6 py-4">Applied Date</th>
+                            <th className="px-6 py-4">Status</th>
+                            <th className="px-6 py-4 text-right">Actions</th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-700/50">
+                    <tbody className="divide-y divide-slate-100">
                         {filteredCompanies.map(company => (
-                            <tr key={company.id} className="hover:bg-slate-750">
-                                <td className="px-6 py-4 font-medium text-slate-200">{company.name}</td>
-                                <td className="px-6 py-4">{company.industry}</td>
-                                <td className="px-6 py-4">{company.appliedDate}</td>
+                            <tr key={company.id} className="hover:bg-slate-50 transition-colors">
+                                <td className="px-6 py-4 font-bold text-slate-800">{company.name}</td>
                                 <td className="px-6 py-4">
-                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                        company.status === 'Approved' ? 'bg-green-500/10 text-green-500' :
-                                        company.status === 'Rejected' ? 'bg-red-500/10 text-red-500' :
-                                        'bg-yellow-500/10 text-yellow-500'
+                                    <span className="px-2.5 py-1 bg-slate-100 text-slate-600 rounded-lg text-xs font-medium">
+                                        {company.industry}
+                                    </span>
+                                </td>
+                                <td className="px-6 py-4 text-slate-500">{company.location}</td>
+                                <td className="px-6 py-4 text-slate-500">{company.appliedDate}</td>
+                                <td className="px-6 py-4">
+                                    <span className={`px-2.5 py-1 rounded-lg text-xs font-bold ${
+                                        company.status === 'Approved' ? 'bg-green-100 text-green-700' :
+                                        company.status === 'Rejected' ? 'bg-red-100 text-red-700' :
+                                        'bg-amber-100 text-amber-700'
                                     }`}>
                                         {company.status}
                                     </span>
@@ -137,14 +191,14 @@ export default function AdminCompaniesPage() {
                                         <>
                                             <button 
                                                 onClick={() => handleApprove(company.id)}
-                                                className="p-1.5 bg-green-500/10 text-green-500 rounded hover:bg-green-500/20 transition-colors"
+                                                className="p-2 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors border border-green-100"
                                                 title="Approve"
                                             >
                                                 <Check className="w-4 h-4" />
                                             </button>
                                             <button 
                                                 onClick={() => handleReject(company.id)}
-                                                className="p-1.5 bg-red-500/10 text-red-500 rounded hover:bg-red-500/20 transition-colors"
+                                                className="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors border border-red-100"
                                                 title="Reject"
                                             >
                                                 <X className="w-4 h-4" />
@@ -154,10 +208,20 @@ export default function AdminCompaniesPage() {
                                 </td>
                             </tr>
                         ))}
-                        {filteredCompanies.length === 0 && (
+                        {filteredCompanies.length === 0 && !loading && (
                             <tr>
-                                <td colSpan={5} className="px-6 py-8 text-center text-slate-500">
-                                    No companies found matching the criteria.
+                                <td colSpan={6} className="px-6 py-12 text-center text-slate-400">
+                                    <div className="flex flex-col items-center justify-center">
+                                        <Building2 size={32} className="mb-2 text-slate-300" />
+                                        <p>No companies found matching the criteria.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        )}
+                        {loading && (
+                            <tr>
+                                <td colSpan={6} className="px-6 py-12 text-center text-slate-400">
+                                    Loading companies...
                                 </td>
                             </tr>
                         )}
@@ -167,10 +231,10 @@ export default function AdminCompaniesPage() {
 
             {/* Toast */}
             {toast && (
-                <div className={`fixed bottom-4 right-4 px-4 py-3 rounded shadow-lg border text-white flex items-center space-x-2 ${
-                    toast.type === 'success' ? 'bg-green-600 border-green-500' : 'bg-red-600 border-red-500'
+                <div className={`fixed bottom-4 right-4 px-6 py-3 rounded-xl text-white font-medium shadow-xl flex items-center gap-2 ${
+                    toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'
                 }`}>
-                    {toast.type === 'success' ? <CheckCircle className="w-5 h-5" /> : <XCircle className="w-5 h-5" />}
+                    {toast.type === 'success' ? <CheckCircle size={18} /> : <XCircle size={18} />}
                     <span>{toast.message}</span>
                 </div>
             )}

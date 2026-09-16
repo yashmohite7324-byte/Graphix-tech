@@ -21,4 +21,10 @@ public class JobController {
     public ApiResponse<List<Job>> searchJobs() {
         return ApiResponse.success(jobService.getAllOpenJobs());
     }
+
+    @GetMapping("/admin/all")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('PLACEMENT_ADMIN', 'SUPER_ADMIN')")
+    public ApiResponse<List<Job>> getAllJobsAdmin() {
+        return ApiResponse.success(jobService.getAllJobs());
+    }
 }

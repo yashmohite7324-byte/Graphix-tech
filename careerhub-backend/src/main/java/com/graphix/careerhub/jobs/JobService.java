@@ -40,7 +40,15 @@ public class JobService {
     }
 
     public List<Job> getAllOpenJobs() {
-        return jobRepository.findAllOpenJobs();
+        return jobRepository.findByStatus(Job.Status.OPEN);
+    }
+
+    public List<Job> getAllJobs() {
+        return jobRepository.findAll();
+    }
+
+    public List<Job> getJobsByCompanyId(Long companyId) {
+        return jobRepository.findByCompanyId(companyId);
     }
 
     public JobEligibility getEligibilityForJob(Long jobId) {

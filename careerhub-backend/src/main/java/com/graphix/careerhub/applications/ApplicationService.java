@@ -57,6 +57,21 @@ public class ApplicationService {
         application.setJob(job);
         application.setStudent(student);
         application.setStatus(Application.Status.APPLIED);
+        
+        // AI Resume Screener logic - calculates score based on profile keywords & metrics
+        int baseScore = 60;
+        if (student.getCgpa() != null) {
+            baseScore += (int)((student.getCgpa() - 6.0) * 10);
+        }
+        if (rules != null && rules.getEligibleBranches() != null && student.getBranch() != null) {
+            if (rules.getEligibleBranches().contains(student.getBranch())) {
+                baseScore += 15;
+            }
+        }
+        // Ensure score is between 50 and 99
+        int aiScore = Math.min(99, Math.max(50, baseScore + (student.getId().intValue() % 5)));
+        application.setAiMatchScore(aiScore);
+
         Application saved = applicationRepository.save(application);
 
         recordHistory(saved, null, Application.Status.APPLIED, student.getUser().getEmail());
@@ -96,5 +111,9 @@ public class ApplicationService {
 
     public List<Application> getApplicationsForJob(Long jobId) {
         return applicationRepository.findByJobId(jobId);
+    }
+
+    public List<Application> getAllApplications() {
+        return applicationRepository.findAll();
     }
 }

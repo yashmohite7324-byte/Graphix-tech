@@ -62,6 +62,16 @@ export const authApi = {
       throw error;
     }
   },
+  sendOtp: async (data: any) => {
+    try {
+      return await api.post('/auth/otp/send', data);
+    } catch (error: any) {
+      if (isDemoFault(error)) {
+        return authDemoResponse({ identifier: data.identifier || data.email, sent: true, message: 'OTP sent via Twilio / Email' });
+      }
+      throw error;
+    }
+  },
   verifyOtp: async (data: any) => {
     try {
       return await api.post('/auth/otp/verify', data);
@@ -104,6 +114,20 @@ export const authApi = {
 export const studentApi = {
   getProfile: () => api.get('/student/me'),
   updateProfile: (data: any) => api.put('/student/me', data),
+  uploadResume: (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post('/student/profile/resume', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+  },
+  uploadPhoto: (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post('/student/profile/photo', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+  },
   getApplications: () => api.get('/student/applications/me'),
   applyToJob: (jobId: number) => api.post(`/student/jobs/${jobId}/apply`),
 };
@@ -115,6 +139,7 @@ export const jobsApi = {
 
 // Recruiter
 export const recruiterApi = {
+  getJobs: () => api.get('/recruiter/jobs'),
   createJob: (data: any) => api.post('/recruiter/jobs', data),
   getApplicationsForJob: (jobId: number) => api.get(`/recruiter/jobs/${jobId}/applications`),
   updateApplicationStatus: (appId: number, status: string) =>
@@ -124,8 +149,14 @@ export const recruiterApi = {
 // Admin
 export const adminApi = {
   getCompanies: () => api.get('/admin/companies'),
+  updateCompanyStatus: (id: number, status: string) => api.patch(`/admin/companies/${id}/status`, { status }),
   approveCompany: (id: number) => api.patch(`/admin/companies/${id}/approve`),
   rejectCompany: (id: number) => api.patch(`/admin/companies/${id}/reject`),
+  getJobs: () => api.get('/jobs/admin/all'),
+  getApplications: () => api.get('/admin/applications/all'),
+  getStudents: () => api.get('/admin/students'),
+  approveStudent: (id: number) => api.patch(`/admin/students/${id}/approve`),
+  rejectStudent: (id: number) => api.patch(`/admin/students/${id}/reject`),
   getAuditLogs: () => api.get('/admin/audit-logs?page=0&size=50'),
 };
 

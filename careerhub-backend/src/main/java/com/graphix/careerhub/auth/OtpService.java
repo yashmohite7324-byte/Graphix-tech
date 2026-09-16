@@ -12,13 +12,17 @@ public class OtpService {
 
     private final OtpVerificationRepository otpVerificationRepository;
     private final EmailService emailService;
+    private final TwilioSmsService twilioSmsService;
 
-    @Value("${app.otp.expiration-minutes}")
+    @Value("${app.otp.expiration-minutes:10}")
     private int expirationMinutes;
 
-    public OtpService(OtpVerificationRepository otpVerificationRepository, EmailService emailService) {
+    public OtpService(OtpVerificationRepository otpVerificationRepository, 
+                      EmailService emailService,
+                      TwilioSmsService twilioSmsService) {
         this.otpVerificationRepository = otpVerificationRepository;
         this.emailService = emailService;
+        this.twilioSmsService = twilioSmsService;
     }
 
     public String generateOtp(String identifier) {
@@ -31,8 +35,13 @@ public class OtpService {
         otp.setConsumed(false);
         otpVerificationRepository.save(otp);
 
-        // Send OTP via EmailService
-        emailService.sendOtpEmail(identifier, code);
+        // Send OTP via Email if identifier contains @
+        if (identifier != null && identifier.contains("@")) {
+            emailService.sendOtpEmail(identifier, code);
+        }
+
+        // Send OTP via Twilio SMS
+        twilioSmsService.sendSmsOtp(identifier, code);
 
         return code;
     }

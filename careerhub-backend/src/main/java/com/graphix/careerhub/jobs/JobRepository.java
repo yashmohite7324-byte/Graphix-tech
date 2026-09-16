@@ -7,6 +7,7 @@ import java.util.List;
 
 public interface JobRepository extends JpaRepository<Job, Long> {
 
-    @Query("SELECT j FROM Job j WHERE j.status = 'OPEN'")
-    List<Job> findAllOpenJobs();
+    List<Job> findByStatus(Job.Status status);
+
+    List<Job> findByCompanyId(Long companyId);
 }
