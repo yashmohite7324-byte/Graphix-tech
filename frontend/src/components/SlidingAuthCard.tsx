@@ -121,10 +121,11 @@ export const SlidingAuthCard = () => {
   const focusBorderColor = activeTab === 'STUDENT' ? 'focus:border-blue-500 focus:ring-blue-500/20' : activeTab === 'RECRUITER' ? 'focus:border-orange-500 focus:ring-orange-500/20' : 'focus:border-purple-500 focus:ring-purple-500/20';
 
   return (
-    <div className="sliding-card-container bg-white/95 dark:bg-slate-900/90 border-white/60 dark:border-slate-700/60 transition-colors duration-500">
+    <div className={`sliding-card-container bg-white/20 dark:bg-slate-900/30 backdrop-blur-3xl border-white/40 dark:border-slate-700/40 transition-colors duration-500 shadow-2xl`}>
       
       {/* Sliding Hero Cover Panel */}
       <div className={`sliding-card-bg ${activeView === 'login' ? 'is-login' : ''} ${themeClass}`}>
+        <div className="absolute inset-0 bg-white/5 dark:bg-black/10 backdrop-blur-xl pointer-events-none"></div>
         <div className="absolute top-4 left-4 right-4 flex justify-between items-center z-10 opacity-80">
           <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-white/90">
             <Sparkles size={14} /> Graphix Infotech
@@ -134,11 +135,11 @@ export const SlidingAuthCard = () => {
 
       {/* Hero Panel 1 (Shown when activeView === 'register') -> Prompts SIGN IN */}
       <div className={`sliding-hero register ${activeView === 'register' ? 'active' : ''}`}>
-        <div className="w-11 h-11 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center mb-1 shadow-inner">
+        <div className="w-11 h-11 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center mb-2 mt-4 shadow-inner">
           <Sparkles className="w-5 h-5 text-white animate-spin-slow" />
         </div>
-        <h2>Already Registered?</h2>
-        <p>Sign in with your credentials or OTP to access your personalized placement dashboard.</p>
+        <h2 className="text-polish text-2xl font-black tracking-tight mb-2">Already Registered?</h2>
+        <p className="opacity-90">Sign in with your credentials or OTP to access your personalized placement dashboard.</p>
         <button type="button" className="sliding-hero-btn group flex items-center gap-2" onClick={toggleView}>
           SIGN IN <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
         </button>
@@ -268,11 +269,11 @@ export const SlidingAuthCard = () => {
 
       {/* Hero Panel 2 (Shown when activeView === 'login') -> Prompts SIGN UP */}
       <div className={`sliding-hero login ${activeView === 'login' ? 'active' : ''}`}>
-        <div className="w-11 h-11 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center mb-1 shadow-inner">
+        <div className="w-11 h-11 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center mb-2 mt-4 shadow-inner">
           <Sparkles className="w-5 h-5 text-white animate-spin-slow" />
         </div>
-        <h2>New Here?</h2>
-        <p>Discover opportunities, orchestrate your career, and connect with top recruiters seamlessly.</p>
+        <h2 className="text-polish text-2xl font-black tracking-tight mb-2">New Here?</h2>
+        <p className="opacity-90">Discover opportunities, orchestrate your career, and connect with top recruiters seamlessly.</p>
         <button type="button" className="sliding-hero-btn group flex items-center gap-2" onClick={toggleView}>
           SIGN UP <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
         </button>

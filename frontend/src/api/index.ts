@@ -86,6 +86,7 @@ export const authApi = {
     try {
       return await api.post('/auth/login', data);
     } catch (error: any) {
+      console.error('Login error:', error.response?.data || error.message);
       if (isDemoFault(error)) {
         const role = /recruit/i.test(data.email) ? 'RECRUITER' : 'STUDENT';
         return authDemoResponse({

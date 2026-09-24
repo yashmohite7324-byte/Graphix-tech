@@ -16,21 +16,21 @@
    -------------------------------------------------------------------------- */
 :root {
   /* Surfaces — four depths, not one flat white */
-  --bg-canvas:      #F7F8FC;   /* page background */
+  --bg-canvas:      #FDFBF7;   /* page background */
   --bg-surface:     #FFFFFF;   /* cards, panels */
-  --bg-surface-2:   #F2F4F9;   /* nested panels, table headers */
-  --bg-surface-3:   #E8ECF5;   /* hover states, wells */
-  --bg-inset:       #FBFCFE;   /* inputs */
+  --bg-surface-2:   #F6F4ED;   /* nested panels, table headers */
+  --bg-surface-3:   #EAE5D9;   /* hover states, wells */
+  --bg-inset:       #FCFBFA;   /* inputs */
 
   /* Text */
-  --text-primary:   #0B1020;
-  --text-secondary: #4A5468;
-  --text-tertiary:  #8A93A8;
+  --text-primary:   #1C1917;
+  --text-secondary: #57534E;
+  --text-tertiary:  #A8A29E;
   --text-inverse:   #FFFFFF;
 
   /* Lines */
-  --border:         #E3E8F2;
-  --border-strong:  #CCD4E4;
+  --border:         #E7E5DF;
+  --border-strong:  #D6D3CD;
 
   /* Brand — Graphix violet through cyan */
   --brand-50:       #EEF1FF;
@@ -41,14 +41,14 @@
   --brand-700:      #363FB8;
 
   /* Elevation */
-  --shadow-sm:  0 1px 2px rgba(11,16,32,.05);
-  --shadow-md:  0 4px 12px rgba(11,16,32,.07), 0 1px 3px rgba(11,16,32,.04);
-  --shadow-lg:  0 12px 32px rgba(11,16,32,.10), 0 2px 8px rgba(11,16,32,.05);
+  --shadow-sm:  0 1px 2px rgba(28,25,23,.05);
+  --shadow-md:  0 4px 12px rgba(28,25,23,.07), 0 1px 3px rgba(11,16,32,.04);
+  --shadow-lg:  0 12px 32px rgba(28,25,23,.10), 0 2px 8px rgba(11,16,32,.05);
   --shadow-glow:0 8px 28px rgba(91,107,245,.28);
 
   /* Pipeline spectrum — a candidate's journey, cool to warm to green.
      Fixed order means a status is legible by hue alone. */
-  --stage-applied:      #8A93A8;
+  --stage-applied:      #A8A29E;
   --stage-review:       #3B82F6;
   --stage-shortlisted:  #5B6BF5;
   --stage-interview:    #8B5CF6;
@@ -76,19 +76,19 @@
    contrast on dark, and feedback colors desaturate so they don't glare.
    -------------------------------------------------------------------------- */
 .dark {
-  --bg-canvas:      #080B16;
-  --bg-surface:     #0F1424;
-  --bg-surface-2:   #161C30;
-  --bg-surface-3:   #1F2740;
-  --bg-inset:       #0C111F;
+  --bg-canvas:      #0C0A09;
+  --bg-surface:     #1C1917;
+  --bg-surface-2:   #292524;
+  --bg-surface-3:   #44403C;
+  --bg-inset:       #171412;
 
-  --text-primary:   #EEF1F8;
-  --text-secondary: #A3ADC4;
-  --text-tertiary:  #6B7794;
-  --text-inverse:   #0B1020;
+  --text-primary:   #F5F5F4;
+  --text-secondary: #A8A29E;
+  --text-tertiary:  #78716C;
+  --text-inverse:   #1C1917;
 
-  --border:         #212A44;
-  --border-strong:  #32406A;
+  --border:         #292524;
+  --border-strong:  #44403C;
 
   --brand-50:       #1A1F3D;
   --brand-100:      #232A52;
@@ -102,7 +102,7 @@
   --shadow-lg:  0 16px 40px rgba(0,0,0,.55);
   --shadow-glow:0 8px 32px rgba(124,137,255,.22);
 
-  --stage-applied:     #6B7794;
+  --stage-applied:     #78716C;
   --stage-review:      #60A5FA;
   --stage-shortlisted: #818CF8;
   --stage-interview:   #A78BFA;

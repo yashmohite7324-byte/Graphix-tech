@@ -12,7 +12,7 @@ export default function StudentDashboard() {
   const { user } = useAuth();
   const first = (user?.name || user?.email?.split('@')[0] || 'there').split(' ')[0];
 
-  const { data: pRes }  = useQuery({ queryKey: ['me'],        queryFn: () => api.get('/students/me'),            retry: false });
+  const { data: pRes }  = useQuery({ queryKey: ['me'],        queryFn: () => api.get('/student/me'),            retry: false });
   const { data: aRes, isLoading } = useQuery({ queryKey: ['my-apps'],   queryFn: () => api.get('/applications/my'),        retry: false });
   const { data: jRes }  = useQuery({ queryKey: ['open-jobs'], queryFn: () => api.get('/jobs/public/search?size=4'), retry: false });
   const { data: iRes }  = useQuery({ queryKey: ['my-ivs'],    queryFn: () => api.get('/interviews/my'),           retry: false });

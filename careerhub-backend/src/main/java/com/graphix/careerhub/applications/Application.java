@@ -35,4 +35,6 @@ public class Application extends BaseEntity {
     private Status status = Status.APPLIED;
 
     private Integer aiMatchScore; // AI Resume Score
+    @jakarta.persistence.Column(columnDefinition = "TEXT")
+    private String aiFeedback; // AI explanation of the score
 }

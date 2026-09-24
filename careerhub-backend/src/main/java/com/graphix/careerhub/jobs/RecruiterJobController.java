@@ -32,6 +32,9 @@ public class RecruiterJobController {
     @PostMapping
     public ApiResponse<Job> createJob(@Valid @RequestBody JobRequest request, Authentication authentication) {
         RecruiterProfile recruiter = getRecruiterProfile(authentication.getName());
+        if (recruiter.getCompany() != null && recruiter.getCompany().getVerificationStatus() != com.graphix.careerhub.companies.Company.VerificationStatus.APPROVED) {
+            throw new RuntimeException("Your company account is pending approval by the placement cell. You cannot post jobs yet.");
+        }
         return ApiResponse.success(jobService.createJob(request, recruiter.getCompany()));
     }
 
