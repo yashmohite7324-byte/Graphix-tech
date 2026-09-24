@@ -54,6 +54,3 @@ Graphix TechHire (CareerHub Pro) is an enterprise-grade campus placement and rec
    npm run dev
    ```
 4. Access the application at `http://localhost:5173`.
-
-## 🔒 Security Note
-This repository does not contain any sensitive API keys or seeded production data. Ensure you set up your own AWS S3 bucket and environment variables before deploying.
