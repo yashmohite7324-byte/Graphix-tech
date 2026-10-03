@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: careerhub-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: careerhub_db
+      POSTGRES_USER: careerhub_user
+      POSTGRES_PASSWORD: CareerHub@123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U careerhub_user -d careerhub_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./careerhub-backend
+      dockerfile: Dockerfile
+    container_name: careerhub-backend
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/careerhub_db
+      SPRING_DATASOURCE_USERNAME: careerhub_user
+      SPRING_DATASOURCE_PASSWORD: CareerHub@123
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      RESEND_FROM_EMAIL: ${RESEND_FROM_EMAIL:-onboarding@resend.dev}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      JAVA_TOOL_OPTIONS: "-Xms128m -Xmx256m -XX:+UseG1GC"
+
+volumes:
+  postgres_data:
