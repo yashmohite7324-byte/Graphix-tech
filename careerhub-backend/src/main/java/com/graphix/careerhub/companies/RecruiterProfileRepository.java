@@ -6,5 +6,6 @@ import java.util.Optional;
 
 public interface RecruiterProfileRepository extends JpaRepository<RecruiterProfile, Long> {
     Optional<RecruiterProfile> findByUserId(Long userId);
+    boolean existsByUserId(Long userId);
     java.util.List<RecruiterProfile> findByCompanyId(Long companyId);
 }
