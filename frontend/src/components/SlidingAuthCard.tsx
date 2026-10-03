@@ -456,7 +456,7 @@ export const SlidingAuthCard = () => {
               className={`w-full py-2.5 mt-1 flex items-center justify-center gap-2 text-xs font-extrabold text-white rounded-xl bg-gradient-to-r ${roleColor} shadow-lg hover:shadow-xl hover:scale-[1.01] active:scale-[0.98] transition-all duration-300 disabled:opacity-70`}
             >
               {loading ? <Loader2 size={16} className="animate-spin" /> : null}
-              {loading ? 'SENDING OTP...' : 'SIGN IN'}
+              {loading ? 'SIGNING IN...' : 'SIGN IN'}
             </button>
 
             <div className="flex items-center justify-center my-2.5">
