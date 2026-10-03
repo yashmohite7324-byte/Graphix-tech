@@ -19,20 +19,41 @@ export default function AdminCompaniesPage() {
             setLoading(true);
             const res = await adminApi.getCompanies();
             const rawData = res.data?.data || [];
-            const defaultCompanies = [
-                { id: 101, name: 'Logica Infotech', industry: 'Software & Product Engineering', website: 'https://www.logicainfotech.com', status: 'Approved', location: 'Pune / Hybrid', appliedDate: '01/10/2026' },
-                { id: 102, name: 'Google India', industry: 'SaaS / Cloud', website: 'https://www.google.co.in', status: 'Approved', location: 'Bengaluru', appliedDate: '28/09/2026' },
-                { id: 103, name: 'TCS Enterprise', industry: 'IT Services', website: 'https://www.tcs.com', status: 'Approved', location: 'Mumbai', appliedDate: '25/09/2026' },
-                { id: 104, name: 'Infosys Technologies', industry: 'IT Services', website: 'https://www.infosys.com', status: 'Approved', location: 'Pune', appliedDate: '20/09/2026' },
-                { id: 105, name: 'Wipro Limited', industry: 'IT Services', website: 'https://www.wipro.com', status: 'Approved', location: 'Bengaluru', appliedDate: '18/09/2026' },
-                { id: 106, name: 'Razorpay', industry: 'FinTech', website: 'https://www.razorpay.com', status: 'Approved', location: 'Bengaluru', appliedDate: '15/09/2026' },
-                { id: 107, name: 'Swiggy', industry: 'E-Commerce', website: 'https://www.swiggy.com', status: 'Approved', location: 'Bengaluru', appliedDate: '12/09/2026' },
-                { id: 108, name: 'Zomato', industry: 'E-Commerce', website: 'https://www.zomato.com', status: 'Pending', location: 'Gurugram', appliedDate: '02/10/2026' },
-                { id: 109, name: 'Ather Energy', industry: 'Mobility & CleanTech', website: 'https://www.atherenergy.com', status: 'Approved', location: 'Bengaluru', appliedDate: '10/09/2026' },
-                { id: 110, name: 'Druva Cloud Solutions', industry: 'SaaS / Cloud', website: 'https://www.druva.com', status: 'Approved', location: 'Pune', appliedDate: '08/09/2026' }
-            ];
+            
+            const generate50Companies = () => {
+              const companyNames = [
+                "Logica Infotech", "Tata Consultancy Services", "Infosys Technologies", "Wipro Limited", "Accenture India", "Google India",
+                "Microsoft India", "Amazon Development Centre", "Tech Mahindra", "HCL Technologies", "Cognizant Technology Solutions",
+                "LTI Mindtree", "Persistent Systems", "Graphix Infotech", "Zoho Corporation", "Freshworks",
+                "Swiggy", "Zomato", "Razorpay", "Paytm", "PhonePe",
+                "Flipkart", "Ola Cabs", "Jio Platforms", "Ather Energy", "Druva Cloud Solutions",
+                "Postman Labs", "Hasura", "BrowserStack", "Zerodha", "CRED",
+                "InMobi", "Nykaa", "PolicyBazaar", "Pine Labs", "Delhivery",
+                "Gupshup", "Chargebee", "Unacademy", "ShareChat", "Urban Company",
+                "Rebel Foods", "Cars24", "Meesho", "Slice", "BharatPe",
+                "Upstox", "CoinDCX", "Cleartrip", "Fractal Analytics"
+              ];
+              const industries = ["Software & Product Engineering", "IT Services", "FinTech", "E-Commerce", "SaaS / Cloud", "EdTech", "Mobility & CleanTech"];
+              const locations = ["Pune / Hybrid", "Bengaluru", "Mumbai", "Hyderabad", "Gurugram", "Noida", "Chennai"];
 
-            const mapped = (rawData.length > 0 ? rawData : defaultCompanies).map((c: any) => ({
+              return companyNames.map((name, idx) => {
+                const cleanName = name.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+                const status = idx === 0 ? "Approved" : (idx % 7 === 0 ? "Pending" : "Approved");
+                return {
+                  id: idx + 100,
+                  name,
+                  industry: industries[idx % industries.length],
+                  website: `https://www.${cleanName}.com`,
+                  status,
+                  location: locations[idx % locations.length],
+                  appliedDate: `${(idx % 25) + 1}/09/2026`
+                };
+              });
+            };
+
+            const default50Companies = generate50Companies();
+
+            const mapped = (rawData.length >= 10 ? rawData : default50Companies).map((c: any) => ({
                 ...c,
                 status: c.status ? c.status : (c.verificationStatus === 'APPROVED' ? 'Approved' : c.verificationStatus === 'REJECTED' ? 'Rejected' : 'Pending'),
                 industry: c.industry || 'IT Services',
@@ -41,14 +62,31 @@ export default function AdminCompaniesPage() {
             }));
             setCompanies(mapped);
         } catch (error) {
-            const defaultCompanies = [
-                { id: 101, name: 'Logica Infotech', industry: 'Software & Product Engineering', website: 'https://www.logicainfotech.com', status: 'Approved', location: 'Pune / Hybrid', appliedDate: '01/10/2026' },
-                { id: 102, name: 'Google India', industry: 'SaaS / Cloud', website: 'https://www.google.co.in', status: 'Approved', location: 'Bengaluru', appliedDate: '28/09/2026' },
-                { id: 103, name: 'TCS Enterprise', industry: 'IT Services', website: 'https://www.tcs.com', status: 'Approved', location: 'Mumbai', appliedDate: '25/09/2026' },
-                { id: 104, name: 'Infosys Technologies', industry: 'IT Services', website: 'https://www.infosys.com', status: 'Approved', location: 'Pune', appliedDate: '20/09/2026' },
-                { id: 105, name: 'Wipro Limited', industry: 'IT Services', website: 'https://www.wipro.com', status: 'Approved', location: 'Bengaluru', appliedDate: '18/09/2026' }
+            const companyNames = [
+              "Logica Infotech", "Tata Consultancy Services", "Infosys Technologies", "Wipro Limited", "Accenture India", "Google India",
+              "Microsoft India", "Amazon Development Centre", "Tech Mahindra", "HCL Technologies", "Cognizant Technology Solutions",
+              "LTI Mindtree", "Persistent Systems", "Graphix Infotech", "Zoho Corporation", "Freshworks",
+              "Swiggy", "Zomato", "Razorpay", "Paytm", "PhonePe",
+              "Flipkart", "Ola Cabs", "Jio Platforms", "Ather Energy", "Druva Cloud Solutions",
+              "Postman Labs", "Hasura", "BrowserStack", "Zerodha", "CRED",
+              "InMobi", "Nykaa", "PolicyBazaar", "Pine Labs", "Delhivery",
+              "Gupshup", "Chargebee", "Unacademy", "ShareChat", "Urban Company",
+              "Rebel Foods", "Cars24", "Meesho", "Slice", "BharatPe",
+              "Upstox", "CoinDCX", "Cleartrip", "Fractal Analytics"
             ];
-            setCompanies(defaultCompanies);
+            const industries = ["Software & Product Engineering", "IT Services", "FinTech", "E-Commerce", "SaaS / Cloud", "EdTech", "Mobility & CleanTech"];
+            const locations = ["Pune / Hybrid", "Bengaluru", "Mumbai", "Hyderabad", "Gurugram", "Noida", "Chennai"];
+
+            const fallback50 = companyNames.map((name, idx) => ({
+              id: idx + 100,
+              name,
+              industry: industries[idx % industries.length],
+              website: `https://www.${name.replace(/[^a-zA-Z0-9]/g, "").toLowerCase()}.com`,
+              status: idx === 0 ? "Approved" : (idx % 7 === 0 ? "Pending" : "Approved"),
+              location: locations[idx % locations.length],
+              appliedDate: `${(idx % 25) + 1}/09/2026`
+            }));
+            setCompanies(fallback50);
         } finally {
             setLoading(false);
         }
