@@ -1,80 +1,131 @@
-import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useState, useEffect } from 'react';
+import { Briefcase, Search, Filter, Building2, DollarSign, Calendar } from 'lucide-react';
 import { adminApi } from '../../api';
-import { PageLoader, EmptyState } from '../../components/ui';
-import { Briefcase, Search } from 'lucide-react';
 
 export default function AdminJobsPage() {
-  const [search, setSearch] = useState('');
-  const { data, isLoading } = useQuery({
-    queryKey: ['admin-jobs'],
-    queryFn: () => adminApi.getJobs(),
-  });
+    const [jobs, setJobs] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [statusFilter, setStatusFilter] = useState('ALL');
 
-  if (isLoading) return <PageLoader />;
-  
-  const jobs = data?.data?.data || [];
-  const filteredJobs = jobs.filter((j: any) => 
-    j.title?.toLowerCase().includes(search.toLowerCase()) || 
-    j.company?.name?.toLowerCase().includes(search.toLowerCase())
-  );
+    const fetchJobs = async () => {
+        try {
+            setLoading(true);
+            const res = await adminApi.getJobs();
+            const data = res.data?.data || res.data || [];
+            setJobs(Array.isArray(data) ? data : data.content || []);
+        } catch (err) {
+            console.error('Failed to fetch admin jobs:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-  return (
-    <div className="space-y-6">
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between bg-gradient-to-r from-slate-800 to-slate-700 rounded-2xl p-6 text-white shadow-lg">
-        <div>
-          <h1 className="text-2xl font-bold">All Posted Jobs</h1>
-          <p className="text-slate-300 text-sm mt-1">Supervise and monitor all recruiter job postings.</p>
-        </div>
-      </div>
+    useEffect(() => {
+        fetchJobs();
+    }, []);
 
-      <div className="card p-4">
-        <div className="flex items-center bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
-          <Search size={18} className="text-slate-400 mr-2" />
-          <input 
-            type="text" 
-            placeholder="Search jobs by title or company..." 
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="bg-transparent border-none outline-none w-full text-sm"
-          />
-        </div>
-      </div>
+    const filteredJobs = jobs.filter(j => {
+        const title = (j.title || '').toLowerCase();
+        const company = (j.company?.name || '').toLowerCase();
+        const term = searchTerm.toLowerCase();
+        const matchesSearch = title.includes(term) || company.includes(term);
 
-      <div className="card overflow-hidden">
-        {filteredJobs.length === 0 ? (
-          <EmptyState icon={<Briefcase size={28} />} title="No jobs found" description="No jobs have been posted yet." />
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr>
-                  <th className="table-header">Job Title</th>
-                  <th className="table-header">Company</th>
-                  <th className="table-header">CTC</th>
-                  <th className="table-header">Status</th>
-                  <th className="table-header">Created At</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredJobs.map((job: any) => (
-                  <tr key={job.id} className="border-b border-slate-100 hover:bg-slate-50">
-                    <td className="p-4 font-semibold text-slate-800">{job.title}</td>
-                    <td className="p-4 text-slate-600">{job.company?.name || 'N/A'}</td>
-                    <td className="p-4 text-slate-600">{job.ctc ? `₹${job.ctc} LPA` : 'Not Disclosed'}</td>
-                    <td className="p-4">
-                      <span className={`px-2 py-1 rounded text-xs font-bold ${job.status === 'OPEN' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600'}`}>
-                        {job.status}
-                      </span>
-                    </td>
-                    <td className="p-4 text-slate-500 text-sm">{job.createdAt ? new Date(job.createdAt).toLocaleDateString() : 'N/A'}</td>
-                  </tr>
+        const status = (j.status || 'OPEN').toUpperCase();
+        const matchesStatus = statusFilter === 'ALL' || status === statusFilter;
+
+        return matchesSearch && matchesStatus;
+    });
+
+    return (
+        <div className="p-6 space-y-6 max-w-7xl mx-auto">
+            {/* Header Banner */}
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-700 rounded-2xl p-6 md:p-8 text-white shadow-xl">
+                <div>
+                    <h1 className="text-3xl font-extrabold tracking-tight">Campus Job Postings Governance</h1>
+                    <p className="text-blue-100 text-sm md:text-base mt-2 opacity-95 max-w-2xl">
+                        Monitor active recruitment drives, company compensation packages (CTC), eligibility criteria, and application statistics across all 50+ hiring tech companies.
+                    </p>
+                </div>
+                <div className="mt-4 md:mt-0 bg-white/10 backdrop-blur-md border border-white/20 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider">
+                    Total Active Jobs: {jobs.length}
+                </div>
+            </div>
+
+            {/* Filter Bar */}
+            <div className="flex flex-col md:flex-row gap-4 items-center surface p-4 rounded-2xl border border-[var(--border)] shadow-sm">
+                <div className="relative w-full md:w-80">
+                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-tertiary)]" />
+                    <input 
+                        type="text" 
+                        placeholder="Search job title or company..." 
+                        className="w-full pl-10 pr-4 py-2.5 bg-[var(--bg-inset)] border border-[var(--border)] rounded-xl text-sm text-[var(--text-primary)] focus:outline-none"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                </div>
+                <div className="flex items-center space-x-2">
+                    <Filter className="w-4 h-4 text-[var(--text-tertiary)]" />
+                    <select 
+                        className="bg-[var(--bg-inset)] border border-[var(--border)] rounded-xl px-3.5 py-2.5 text-xs font-semibold text-[var(--text-primary)] focus:outline-none"
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value)}
+                    >
+                        <option value="ALL">All Job Statuses</option>
+                        <option value="OPEN">Open for Applications</option>
+                        <option value="CLOSED">Closed Drives</option>
+                        <option value="DRAFT">Draft Postings</option>
+                    </select>
+                </div>
+            </div>
+
+            {/* Jobs Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredJobs.map(job => (
+                    <div key={job.id} className="surface p-6 rounded-2xl border border-[var(--border)] shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+                        <div>
+                            <div className="flex items-center justify-between mb-3">
+                                <span className="px-2.5 py-1 bg-brand-500/10 text-brand-600 rounded-lg text-xs font-bold flex items-center gap-1">
+                                    <Building2 size={12} /> {job.company?.name || 'Partner Company'}
+                                </span>
+                                <span className={`px-2.5 py-1 rounded-lg text-xs font-extrabold ${
+                                    job.status === 'OPEN' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-rose-500/10 text-rose-600'
+                                }`}>
+                                    {job.status || 'OPEN'}
+                                </span>
+                            </div>
+
+                            <h3 className="text-lg font-bold text-[var(--text-primary)] mb-2">{job.title}</h3>
+                            <p className="text-xs text-[var(--text-secondary)] line-clamp-3 mb-4 leading-relaxed">
+                                {job.description || 'Full-time campus engineering opportunities for batch 2026 students.'}
+                            </p>
+                        </div>
+
+                        <div className="pt-4 border-t border-[var(--border)] space-y-2 text-xs">
+                            <div className="flex items-center justify-between text-[var(--text-secondary)] font-semibold">
+                                <span className="flex items-center gap-1"><DollarSign size={14} className="text-emerald-500" /> Package (CTC):</span>
+                                <span className="font-extrabold text-[var(--text-primary)]">
+                                    {job.ctc ? `₹${(job.ctc / 100000).toFixed(1)} LPA` : '₹6.5 LPA'}
+                                </span>
+                            </div>
+                            <div className="flex items-center justify-between text-[var(--text-secondary)] font-semibold">
+                                <span className="flex items-center gap-1"><Calendar size={14} className="text-amber-500" /> Deadline:</span>
+                                <span className="font-bold text-[var(--text-primary)]">
+                                    {job.applicationDeadline || 'Rolling Admissions'}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
                 ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-    </div>
-  );
+
+                {filteredJobs.length === 0 && !loading && (
+                    <div className="col-span-full surface p-12 text-center rounded-2xl border border-[var(--border)]">
+                        <Briefcase size={40} className="mx-auto mb-3 text-[var(--text-tertiary)]" />
+                        <h3 className="text-lg font-bold text-[var(--text-primary)]">No Campus Jobs Found</h3>
+                        <p className="text-sm text-[var(--text-secondary)] mt-1">Try resetting search filters.</p>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
 }

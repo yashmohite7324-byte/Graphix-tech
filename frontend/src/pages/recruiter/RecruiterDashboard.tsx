@@ -38,7 +38,7 @@ export default function RecruiterDashboard() {
 
       <Panel title="Your Job Postings">
         {isLoading ? <Loading /> : jobs.length === 0 ? (
-          <Empty icon={<Briefcase size={22} />} title="No jobs posted yet" description="Post your first job to start receiving applications." action={<Link to="/recruiter/jobs" className="btn btn-primary">Create job post</Link>} />
+          <Empty icon={<Briefcase size={22} />} title="No jobs posted yet" body="Post your first job to start receiving applications." action={<Link to="/recruiter/jobs" className="btn btn-primary">Create job post</Link>} />
         ) : (
           <div className="overflow-x-auto rounded-xl border border-[var(--border)] shadow-sm bg-[var(--bg-surface)]">
             <table className="w-full text-sm text-left">

@@ -96,7 +96,7 @@ public class AuthService {
 
         auditService.log(request.getEmail(), "REGISTER", "User", user.getId().toString(), "New " + roleUpper + " registered");
 
-        return "Registration successful. Twilio SMS OTP sent to " + target;
+        return "Registration successful. Verification OTP sent to " + target;
     }
 
     public String sendOtp(String identifier) {
@@ -182,6 +182,10 @@ public class AuthService {
             throw new UnauthorizedException("Invalid credentials");
         }
 
+        if (user.getStatus() == User.Status.BANNED || user.getStatus() == User.Status.SUSPENDED) {
+            throw new UnauthorizedException("Your account has been suspended by the Placement Admin.");
+        }
+
         // If Recruiter, check Company verification status FIRST
         if (user.getRole() == User.Role.RECRUITER) {
             RecruiterProfile rp = recruiterProfileRepository.findByUserId(user.getId()).orElse(null);
@@ -205,6 +209,9 @@ public class AuthService {
                 }
                 if (sp.getVerificationStatus() == StudentProfile.VerificationStatus.REJECTED) {
                     throw new UnauthorizedException("Student account rejected by Placement Admin.");
+                }
+                if (sp.getVerificationStatus() == StudentProfile.VerificationStatus.BLOCKED) {
+                    throw new UnauthorizedException("Your student account has been blocked by the Placement Admin.");
                 }
             }
         }

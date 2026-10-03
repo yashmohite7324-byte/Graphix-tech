@@ -14,8 +14,13 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 
+import jakarta.persistence.Index;
+
 @Entity
-@Table(name = "jobs")
+@Table(name = "jobs", indexes = {
+    @Index(name = "idx_job_status", columnList = "status"),
+    @Index(name = "idx_job_company", columnList = "company_id")
+})
 @Getter
 @Setter
 public class Job extends BaseEntity {

@@ -16,7 +16,7 @@ import lombok.Setter;
 public class User extends BaseEntity {
 
     public enum Role { SUPER_ADMIN, PLACEMENT_ADMIN, TRAINER, STUDENT, RECRUITER }
-    public enum Status { PENDING, ACTIVE, SUSPENDED }
+    public enum Status { PENDING, ACTIVE, SUSPENDED, BANNED }
 
     @Column(unique = true, nullable = false)
     private String email;
@@ -24,6 +24,7 @@ public class User extends BaseEntity {
     @Column(unique = true)
     private String mobile;
 
+    @com.fasterxml.jackson.annotation.JsonIgnore
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;
 

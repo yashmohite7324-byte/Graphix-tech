@@ -18,11 +18,16 @@ import AdminPlacementsPage from './pages/admin/AdminPlacementsPage';
 import AdminAnalyticsPage from './pages/admin/AdminAnalyticsPage';
 import AdminAuditPage from './pages/admin/AdminAuditPage';
 import AdminAnnouncementsPage from './pages/admin/AdminAnnouncementsPage';
+import AdminTrainingPage from './pages/admin/AdminTrainingPage';
+import AdminJobsPage from './pages/admin/AdminJobsPage';
+import AdminApplicationsPage from './pages/admin/AdminApplicationsPage';
+import AdminInterviewsPage from './pages/admin/AdminInterviewsPage';
 import RecruiterDashboard from './pages/recruiter/RecruiterDashboard';
 import RecruiterPostJobPage from './pages/recruiter/RecruiterPostJobPage';
 import RecruiterCandidatePipelinePage from './pages/recruiter/RecruiterCandidatePipelinePage';
 import RecruiterInterviewsPage from './pages/recruiter/RecruiterInterviewsPage';
 import TrainerDashboard from './pages/trainer/TrainerDashboard';
+import TrainerProgramsPage from './pages/trainer/TrainerProgramsPage';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 30_000, retry: 1 } },
@@ -95,18 +100,18 @@ export default function App() {
             <Route path="/admin/dashboard" element={<PrivateRoute allowedRoles={['PLACEMENT_ADMIN','SUPER_ADMIN']}><AdminDashboard /></PrivateRoute>} />
             <Route path="/admin/companies" element={<PrivateRoute allowedRoles={['PLACEMENT_ADMIN','SUPER_ADMIN']}><AdminCompaniesPage /></PrivateRoute>} />
             <Route path="/admin/students" element={<PrivateRoute allowedRoles={['PLACEMENT_ADMIN','SUPER_ADMIN']}><AdminStudentsPage /></PrivateRoute>} />
-            <Route path="/admin/jobs" element={<PrivateRoute allowedRoles={['PLACEMENT_ADMIN','SUPER_ADMIN']}><ComingSoon title="Jobs" /></PrivateRoute>} />
-            <Route path="/admin/applications" element={<PrivateRoute allowedRoles={['PLACEMENT_ADMIN','SUPER_ADMIN']}><ComingSoon title="Applications" /></PrivateRoute>} />
-            <Route path="/admin/interviews" element={<PrivateRoute allowedRoles={['PLACEMENT_ADMIN','SUPER_ADMIN']}><ComingSoon title="Interviews" /></PrivateRoute>} />
+            <Route path="/admin/jobs" element={<PrivateRoute allowedRoles={['PLACEMENT_ADMIN','SUPER_ADMIN']}><AdminJobsPage /></PrivateRoute>} />
+            <Route path="/admin/applications" element={<PrivateRoute allowedRoles={['PLACEMENT_ADMIN','SUPER_ADMIN']}><AdminApplicationsPage /></PrivateRoute>} />
+            <Route path="/admin/interviews" element={<PrivateRoute allowedRoles={['PLACEMENT_ADMIN','SUPER_ADMIN']}><AdminInterviewsPage /></PrivateRoute>} />
             <Route path="/admin/placements" element={<PrivateRoute allowedRoles={['PLACEMENT_ADMIN','SUPER_ADMIN']}><AdminPlacementsPage /></PrivateRoute>} />
-            <Route path="/admin/training" element={<PrivateRoute allowedRoles={['PLACEMENT_ADMIN','SUPER_ADMIN']}><ComingSoon title="Training" /></PrivateRoute>} />
+            <Route path="/admin/training" element={<PrivateRoute allowedRoles={['PLACEMENT_ADMIN','SUPER_ADMIN']}><AdminTrainingPage /></PrivateRoute>} />
             <Route path="/admin/analytics" element={<PrivateRoute allowedRoles={['PLACEMENT_ADMIN','SUPER_ADMIN']}><AdminAnalyticsPage /></PrivateRoute>} />
             <Route path="/admin/audit" element={<PrivateRoute allowedRoles={['PLACEMENT_ADMIN','SUPER_ADMIN']}><AdminAuditPage /></PrivateRoute>} />
             <Route path="/admin/announcements" element={<PrivateRoute allowedRoles={['PLACEMENT_ADMIN','SUPER_ADMIN']}><AdminAnnouncementsPage /></PrivateRoute>} />
             <Route path="/admin/settings" element={<PrivateRoute allowedRoles={['SUPER_ADMIN']}><ComingSoon title="Settings" /></PrivateRoute>} />
             {/* Trainer Routes */}
             <Route path="/trainer/dashboard" element={<PrivateRoute allowedRoles={['TRAINER']}><TrainerDashboard /></PrivateRoute>} />
-            <Route path="/trainer/programs" element={<PrivateRoute allowedRoles={['TRAINER']}><ComingSoon title="Programs" /></PrivateRoute>} />
+            <Route path="/trainer/programs" element={<PrivateRoute allowedRoles={['TRAINER']}><TrainerProgramsPage /></PrivateRoute>} />
             <Route path="/trainer/batches" element={<PrivateRoute allowedRoles={['TRAINER']}><ComingSoon title="Batches" /></PrivateRoute>} />
             <Route path="/trainer/attendance" element={<PrivateRoute allowedRoles={['TRAINER']}><ComingSoon title="Attendance" /></PrivateRoute>} />
             <Route path="/trainer/assessments" element={<PrivateRoute allowedRoles={['TRAINER']}><ComingSoon title="Assessments" /></PrivateRoute>} />

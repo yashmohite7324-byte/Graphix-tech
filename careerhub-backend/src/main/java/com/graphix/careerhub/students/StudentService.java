@@ -16,17 +16,20 @@ public class StudentService {
 
     private final StudentProfileRepository studentProfileRepository;
     private final UserRepository userRepository;
+    private final com.graphix.careerhub.applications.ApplicationRepository applicationRepository;
     private final S3Service s3Service;
     private final com.graphix.careerhub.audit.AuditService auditService;
     private final com.graphix.careerhub.notifications.NotificationService notificationService;
 
     public StudentService(StudentProfileRepository studentProfileRepository,
                           UserRepository userRepository,
+                          com.graphix.careerhub.applications.ApplicationRepository applicationRepository,
                           S3Service s3Service,
                           com.graphix.careerhub.audit.AuditService auditService,
                           com.graphix.careerhub.notifications.NotificationService notificationService) {
         this.studentProfileRepository = studentProfileRepository;
         this.userRepository = userRepository;
+        this.applicationRepository = applicationRepository;
         this.s3Service = s3Service;
         this.auditService = auditService;
         this.notificationService = notificationService;
@@ -47,29 +50,94 @@ public class StudentService {
         return studentProfileRepository.findAll();
     }
 
+    public java.util.List<StudentProfile> getStudentsByBranch(String branch) {
+        if (branch == null || branch.isBlank() || branch.equalsIgnoreCase("ALL")) {
+            return studentProfileRepository.findAll();
+        }
+        return studentProfileRepository.findByBranch(branch);
+    }
+
+    @org.springframework.transaction.annotation.Transactional
     public StudentProfile approveStudent(Long id, String adminEmail) {
+        String safeEmail = (adminEmail != null && !adminEmail.isBlank()) ? adminEmail : "admin@graphixinfotech.com";
         StudentProfile sp = studentProfileRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Student not found"));
         sp.setVerificationStatus(StudentProfile.VerificationStatus.APPROVED);
-        studentProfileRepository.save(sp);
-        auditService.log(adminEmail, "STUDENT_APPROVED", "Student", id.toString(), sp.getFullName());
-        
         if (sp.getUser() != null) {
-            notificationService.send(sp.getUser().getId(), com.graphix.careerhub.notifications.Notification.Type.SYSTEM, "Account Approved", "Your academy account has been approved by the Placement Admin. You can now log in.");
+            sp.getUser().setStatus(User.Status.ACTIVE);
+            userRepository.save(sp.getUser());
         }
+        studentProfileRepository.save(sp);
+        try {
+            auditService.log(safeEmail, "STUDENT_APPROVED", "Student", id.toString(), sp.getFullName());
+            if (sp.getUser() != null) {
+                notificationService.send(sp.getUser().getId(), com.graphix.careerhub.notifications.Notification.Type.SYSTEM, "Account Approved", "Your academy account has been approved by the Placement Admin. You can now log in.");
+            }
+        } catch (Exception ignored) {}
         
         return sp;
     }
 
+    @org.springframework.transaction.annotation.Transactional
     public StudentProfile rejectStudent(Long id, String adminEmail) {
+        String safeEmail = (adminEmail != null && !adminEmail.isBlank()) ? adminEmail : "admin@graphixinfotech.com";
         StudentProfile sp = studentProfileRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Student not found"));
         sp.setVerificationStatus(StudentProfile.VerificationStatus.REJECTED);
         studentProfileRepository.save(sp);
-        auditService.log(adminEmail, "STUDENT_REJECTED", "Student", id.toString(), sp.getFullName());
+        try {
+            auditService.log(safeEmail, "STUDENT_REJECTED", "Student", id.toString(), sp.getFullName());
+            if (sp.getUser() != null) {
+                notificationService.send(sp.getUser().getId(), com.graphix.careerhub.notifications.Notification.Type.SYSTEM, "Account Rejected", "Your academy account has been rejected by the Placement Admin.");
+            }
+        } catch (Exception ignored) {}
         
+        return sp;
+    }
+
+    @org.springframework.transaction.annotation.Transactional
+    public StudentProfile blockStudent(Long id, String adminEmail) {
+        String safeEmail = (adminEmail != null && !adminEmail.isBlank()) ? adminEmail : "admin@graphixinfotech.com";
+        StudentProfile sp = studentProfileRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Student not found"));
+        sp.setVerificationStatus(StudentProfile.VerificationStatus.BLOCKED);
         if (sp.getUser() != null) {
-            notificationService.send(sp.getUser().getId(), com.graphix.careerhub.notifications.Notification.Type.SYSTEM, "Account Rejected", "Your academy account has been rejected by the Placement Admin.");
+            sp.getUser().setStatus(User.Status.SUSPENDED);
+            userRepository.save(sp.getUser());
         }
-        
+        studentProfileRepository.save(sp);
+
+        // Withdraw all active candidate pipeline applications for this blocked student
+        try {
+            java.util.List<com.graphix.careerhub.applications.Application> apps = applicationRepository.findByStudentId(id);
+            for (com.graphix.careerhub.applications.Application app : apps) {
+                app.setStatus(com.graphix.careerhub.applications.Application.Status.WITHDRAWN);
+                applicationRepository.save(app);
+            }
+        } catch (Exception e) {
+            System.err.println("Notice withdrawing candidate applications: " + e.getMessage());
+        }
+
+        try {
+            auditService.log(safeEmail, "STUDENT_BLOCKED", "Student", id.toString(), sp.getFullName());
+            if (sp.getUser() != null) {
+                notificationService.send(sp.getUser().getId(), com.graphix.careerhub.notifications.Notification.Type.SYSTEM, "Account Suspended", "Your account has been blocked by the Placement Admin.");
+            }
+        } catch (Exception ignored) {}
+
+        return sp;
+    }
+
+    @org.springframework.transaction.annotation.Transactional
+    public StudentProfile unblockStudent(Long id, String adminEmail) {
+        String safeEmail = (adminEmail != null && !adminEmail.isBlank()) ? adminEmail : "admin@graphixinfotech.com";
+        StudentProfile sp = studentProfileRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Student not found"));
+        sp.setVerificationStatus(StudentProfile.VerificationStatus.APPROVED);
+        if (sp.getUser() != null) {
+            sp.getUser().setStatus(User.Status.ACTIVE);
+            userRepository.save(sp.getUser());
+        }
+        studentProfileRepository.save(sp);
+        try {
+            auditService.log(safeEmail, "STUDENT_UNBLOCKED", "Student", id.toString(), sp.getFullName());
+        } catch (Exception ignored) {}
         return sp;
     }
 

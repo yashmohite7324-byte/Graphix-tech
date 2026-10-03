@@ -39,7 +39,7 @@ export default function TrainerDashboard() {
           <Empty
             icon={<BookOpen size={22} />}
             title="No training programs yet"
-            description="Create your first training program to get started."
+            body="Create your first training program to get started."
           />
         ) : (
           <div className="overflow-x-auto">

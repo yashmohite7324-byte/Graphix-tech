@@ -9,7 +9,7 @@ import {
 } from 'recharts';
 import {
   GraduationCap, Building2, Briefcase, Award,
-  ClipboardList, AlertTriangle, Users, TrendingUp,
+  ClipboardList, AlertTriangle,
 } from 'lucide-react';
 
 export default function AdminDashboard() {

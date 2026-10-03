@@ -40,4 +40,9 @@ public class StudentController {
             @RequestParam("file") MultipartFile file) {
         return ApiResponse.success(studentService.uploadPhoto(authentication.getName(), file));
     }
+
+    @GetMapping("/search")
+    public ApiResponse<java.util.List<StudentProfile>> searchByBranch(@RequestParam(required = false) String branch) {
+        return ApiResponse.success(studentService.getStudentsByBranch(branch));
+    }
 }

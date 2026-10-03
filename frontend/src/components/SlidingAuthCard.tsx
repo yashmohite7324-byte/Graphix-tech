@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { authApi } from '../api';
 import { GraduationCap, Briefcase, ShieldCheck, Loader2, Mail, Lock, User, Eye, EyeOff, Sparkles, ArrowRight, CheckCircle, KeyRound, Phone } from 'lucide-react';
+import { GoogleLogin } from '@react-oauth/google';
 import './SlidingAuthCard.css';
 
 type RoleTab = 'STUDENT' | 'RECRUITER' | 'ADMIN';
@@ -22,9 +23,6 @@ export const SlidingAuthCard = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [fullName, setFullName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   
   const { login } = useAuth();
@@ -50,7 +48,7 @@ export const SlidingAuthCard = () => {
         const target = accessToken.replace('REQUIRES_OTP:', '');
         setRequiresOtp(true);
         setOtpTarget(target);
-        setSuccessMsg(`Twilio SMS OTP code sent to ${target}. Please enter the 6-digit code.`);
+        setSuccessMsg(`Verification OTP code sent to ${target}. Please enter the 6-digit code.`);
         return;
       }
 
@@ -103,7 +101,7 @@ export const SlidingAuthCard = () => {
     setSuccessMsg('');
     try {
       const res = await authApi.register(registerForm);
-      setSuccessMsg(res.data.data || 'Registration successful. Twilio SMS OTP code sent to your mobile phone!');
+      setSuccessMsg(res.data.data || 'Registration successful. Verification OTP sent to your registered email/mobile!');
       setLoginForm({ email: registerForm.email, password: registerForm.password });
       setRequiresOtp(true);
       setOtpTarget(registerForm.mobile || registerForm.email);
@@ -111,6 +109,29 @@ export const SlidingAuthCard = () => {
       setActiveView('login');
     } catch (err: any) {
       setError(err.response?.data?.error || 'Registration failed. Please check your details.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSuccess = async (credentialResponse: any) => {
+    setLoading(true);
+    setError('');
+    try {
+      const res = await authApi.loginWithGoogle({ token: credentialResponse.credential });
+      const { accessToken, refreshToken, role, email, name, designation, companyName } = res.data.data;
+      login(accessToken, refreshToken, role, email, name, designation, companyName);
+
+      const routes: Record<string, string> = {
+        STUDENT: '/student/dashboard',
+        RECRUITER: '/recruiter/dashboard',
+        PLACEMENT_ADMIN: '/admin/dashboard',
+        SUPER_ADMIN: '/admin/dashboard',
+        TRAINER: '/trainer/dashboard',
+      };
+      navigate(routes[role] || '/student/dashboard');
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Google Login authentication failed.');
     } finally {
       setLoading(false);
     }
@@ -404,14 +425,29 @@ export const SlidingAuthCard = () => {
               className={`w-full py-2.5 mt-1 flex items-center justify-center gap-2 text-xs font-extrabold text-white rounded-xl bg-gradient-to-r ${roleColor} shadow-lg hover:shadow-xl hover:scale-[1.01] active:scale-[0.98] transition-all duration-300 disabled:opacity-70`}
             >
               {loading ? <Loader2 size={16} className="animate-spin" /> : null}
-              {loading ? 'SENDING TWILIO OTP...' : 'SIGN IN'}
+              {loading ? 'SENDING OTP...' : 'SIGN IN'}
             </button>
+
+            <div className="flex items-center justify-center my-2.5">
+              <span className="text-[10px] text-slate-400 font-extrabold uppercase tracking-widest px-2">OR SIGN IN WITH GMAIL</span>
+            </div>
+
+            <div className="w-full flex justify-center">
+              <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={() => setError('Google OAuth Login Failed')}
+                theme="outline"
+                size="large"
+                text="continue_with"
+                width="100%"
+              />
+            </div>
           </form>
         ) : (
-          /* Twilio SMS OTP Code Verification Form */
+          /* OTP Code Verification Form */
           <form onSubmit={handleVerifyOtpSubmit} className="w-full space-y-3 animate-fadeIn">
             <div className="text-center text-xs font-semibold text-slate-300 dark:text-slate-300 mb-1">
-              Twilio SMS OTP sent to <span className="text-indigo-400 font-bold">{otpTarget}</span>
+              Verification OTP sent to <span className="text-indigo-400 font-bold">{otpTarget}</span>
             </div>
             <div className="glass-input-wrapper">
               <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
@@ -435,7 +471,7 @@ export const SlidingAuthCard = () => {
               className={`w-full py-2.5 mt-1 flex items-center justify-center gap-2 text-xs font-extrabold text-white rounded-xl bg-gradient-to-r ${roleColor} shadow-lg hover:shadow-xl hover:scale-[1.01] active:scale-[0.98] transition-all duration-300 disabled:opacity-50`}
             >
               {loading ? <Loader2 size={16} className="animate-spin" /> : null}
-              {loading ? 'VERIFYING OTP...' : 'VERIFY TWILIO SMS OTP & SIGN IN'}
+              {loading ? 'VERIFYING OTP...' : 'VERIFY OTP & SIGN IN'}
             </button>
 
             <button

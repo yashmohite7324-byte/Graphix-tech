@@ -134,7 +134,7 @@ export default function AdminAnalyticsPage() {
                                         paddingAngle={5}
                                         dataKey="value"
                                     >
-                                        {sectorData.map((entry, index) => (
+                                        {sectorData.map((_, index) => (
                                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                         ))}
                                     </Pie>

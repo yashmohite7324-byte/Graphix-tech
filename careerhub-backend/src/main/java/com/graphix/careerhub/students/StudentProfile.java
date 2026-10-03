@@ -10,13 +10,19 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 
+import jakarta.persistence.Index;
+
 @Entity
-@Table(name = "student_profiles")
+@Table(name = "student_profiles", indexes = {
+    @Index(name = "idx_student_branch", columnList = "branch"),
+    @Index(name = "idx_student_status", columnList = "verificationStatus"),
+    @Index(name = "idx_student_roll", columnList = "rollNumber")
+})
 @Getter
 @Setter
 public class StudentProfile extends BaseEntity {
 
-    public enum VerificationStatus { PENDING, APPROVED, REJECTED }
+    public enum VerificationStatus { PENDING, APPROVED, REJECTED, BLOCKED }
 
     @jakarta.persistence.Enumerated(jakarta.persistence.EnumType.STRING)
     private VerificationStatus verificationStatus = VerificationStatus.PENDING;

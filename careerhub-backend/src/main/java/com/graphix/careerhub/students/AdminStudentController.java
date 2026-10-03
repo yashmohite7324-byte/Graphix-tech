@@ -18,6 +18,10 @@ public class AdminStudentController {
         this.studentService = studentService;
     }
 
+    private String getAdminEmail(Authentication authentication) {
+        return (authentication != null && authentication.getName() != null) ? authentication.getName() : "admin@graphixinfotech.com";
+    }
+
     @GetMapping
     public ApiResponse<List<StudentProfile>> getAllStudents() {
         return ApiResponse.success(studentService.getAllStudents());
@@ -25,11 +29,21 @@ public class AdminStudentController {
 
     @PatchMapping("/{id}/approve")
     public ApiResponse<StudentProfile> approveStudent(@PathVariable Long id, Authentication authentication) {
-        return ApiResponse.success(studentService.approveStudent(id, authentication.getName()));
+        return ApiResponse.success(studentService.approveStudent(id, getAdminEmail(authentication)));
     }
 
     @PatchMapping("/{id}/reject")
     public ApiResponse<StudentProfile> rejectStudent(@PathVariable Long id, Authentication authentication) {
-        return ApiResponse.success(studentService.rejectStudent(id, authentication.getName()));
+        return ApiResponse.success(studentService.rejectStudent(id, getAdminEmail(authentication)));
+    }
+
+    @PatchMapping("/{id}/block")
+    public ApiResponse<StudentProfile> blockStudent(@PathVariable Long id, Authentication authentication) {
+        return ApiResponse.success(studentService.blockStudent(id, getAdminEmail(authentication)));
+    }
+
+    @PatchMapping("/{id}/unblock")
+    public ApiResponse<StudentProfile> unblockStudent(@PathVariable Long id, Authentication authentication) {
+        return ApiResponse.success(studentService.unblockStudent(id, getAdminEmail(authentication)));
     }
 }

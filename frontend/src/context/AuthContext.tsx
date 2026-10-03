@@ -4,6 +4,7 @@ interface AuthUser {
   email: string;
   role: string;
   name?: string;
+  mobile?: string;
   designation?: string;
   companyName?: string;
 }

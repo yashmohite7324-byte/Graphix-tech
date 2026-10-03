@@ -81,10 +81,36 @@ export default function RecruiterCandidatePipelinePage() {
       );
   }
 
+  const [selectedBranch, setSelectedBranch] = useState('ALL');
+
+  const filteredCandidates = candidates.filter(c => {
+    if (selectedBranch === 'ALL') return true;
+    return c.student?.branch === selectedBranch;
+  });
+
   return (
     <div className="p-6 h-[calc(100vh-4rem)] flex flex-col">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold flex items-center gap-2"><Users className="w-6 h-6 text-brand-600" /> Candidate Pipeline</h1>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+        <h1 className="text-2xl font-bold flex items-center gap-2"><Users className="w-6 h-6 text-brand-600" /> Candidate Pipeline & Stream Matcher</h1>
+        
+        {/* Stream Filter */}
+        <div className="flex items-center space-x-2 bg-slate-100 dark:bg-slate-800 p-1.5 rounded-xl border border-slate-200 dark:border-slate-700">
+          <span className="text-xs font-bold text-slate-500 uppercase px-2">Filter Stream:</span>
+          <select 
+            value={selectedBranch}
+            onChange={(e) => setSelectedBranch(e.target.value)}
+            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold px-3 py-1.5 focus:outline-none"
+          >
+            <option value="ALL">All Streams & Branches</option>
+            <option value="Computer Engineering">Computer Engineering</option>
+            <option value="Information Technology">Information Technology</option>
+            <option value="Data Science & AI">Data Science & AI</option>
+            <option value="Electronics & Telecommunication">ENTC Engineering</option>
+            <option value="Mechanical Engineering">Mechanical Engineering</option>
+            <option value="Civil Engineering">Civil Engineering</option>
+            <option value="Electrical Engineering">Electrical Engineering</option>
+          </select>
+        </div>
       </div>
 
       <div className="flex border-b border-slate-200 mb-6 overflow-x-auto no-scrollbar">
@@ -104,7 +130,7 @@ export default function RecruiterCandidatePipelinePage() {
       <div className="flex-1 overflow-x-auto">
         <div className="flex gap-4 min-w-max h-full pb-4">
           {STAGES.map(stage => {
-            const stageCandidates = candidates.filter(c => c.status === stage);
+            const stageCandidates = filteredCandidates.filter(c => c.status === stage);
             
             return (
               <div key={stage} className="bg-slate-50 w-80 rounded-lg flex flex-col border border-slate-200 shadow-sm">

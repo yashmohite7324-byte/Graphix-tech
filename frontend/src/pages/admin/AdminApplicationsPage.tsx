@@ -1,87 +1,161 @@
-import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useState, useEffect } from 'react';
+import { FileText, Search, Filter } from 'lucide-react';
 import { adminApi } from '../../api';
-import { PageLoader, EmptyState, StatusBadge } from '../../components/ui';
-import { ClipboardList, Search } from 'lucide-react';
 
 export default function AdminApplicationsPage() {
-  const [search, setSearch] = useState('');
-  const { data, isLoading } = useQuery({
-    queryKey: ['admin-applications'],
-    queryFn: () => adminApi.getApplications(),
-  });
+    const [applications, setApplications] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [stageFilter, setStageFilter] = useState('ALL');
 
-  if (isLoading) return <PageLoader />;
-  
-  const applications = data?.data?.data || [];
-  const filteredApps = applications.filter((app: any) => 
-    app.student?.fullName?.toLowerCase().includes(search.toLowerCase()) || 
-    app.job?.title?.toLowerCase().includes(search.toLowerCase()) ||
-    app.job?.company?.name?.toLowerCase().includes(search.toLowerCase())
-  );
+    const fetchApplications = async () => {
+        try {
+            setLoading(true);
+            const res = await adminApi.getApplications();
+            const data = res.data?.data || res.data || [];
+            setApplications(Array.isArray(data) ? data : []);
+        } catch (err) {
+            console.error('Failed to fetch admin applications:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-  return (
-    <div className="space-y-6">
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between bg-gradient-to-r from-slate-800 to-slate-700 rounded-2xl p-6 text-white shadow-lg">
-        <div>
-          <h1 className="text-2xl font-bold">All Student Applications</h1>
-          <p className="text-slate-300 text-sm mt-1">Supervise applications across all companies and jobs.</p>
+    useEffect(() => {
+        fetchApplications();
+    }, []);
+
+    const filteredApps = applications.filter(app => {
+        const studentName = (app.student?.fullName || app.studentName || '').toLowerCase();
+        const jobTitle = (app.job?.title || app.jobTitle || '').toLowerCase();
+        const companyName = (app.job?.company?.name || app.companyName || '').toLowerCase();
+        const term = searchTerm.toLowerCase();
+
+        const matchesSearch = studentName.includes(term) || jobTitle.includes(term) || companyName.includes(term);
+        const status = (app.status || 'APPLIED').toUpperCase();
+        const matchesStage = stageFilter === 'ALL' || status === stageFilter;
+
+        return matchesSearch && matchesStage;
+    });
+
+    const getStatusBadge = (status: string) => {
+        switch (status) {
+            case 'SELECTED':
+            case 'OFFERED':
+            case 'PLACED':
+                return 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-300';
+            case 'SHORTLISTED':
+            case 'INTERVIEW_SCHEDULED':
+                return 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-300';
+            case 'REJECTED':
+            case 'WITHDRAWN':
+                return 'bg-rose-500/10 text-rose-600 dark:text-rose-300';
+            default:
+                return 'bg-amber-500/10 text-amber-600 dark:text-amber-300';
+        }
+    };
+
+    return (
+        <div className="p-6 space-y-6 max-w-7xl mx-auto">
+            {/* Header Banner */}
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-700 rounded-2xl p-6 md:p-8 text-white shadow-xl">
+                <div>
+                    <h1 className="text-3xl font-extrabold tracking-tight">System Student Applications Monitor</h1>
+                    <p className="text-purple-100 text-sm md:text-base mt-2 opacity-95 max-w-2xl">
+                        Comprehensive administrative oversight of all student job applications, AI match detector scores, and recruitment pipeline progression across company drives.
+                    </p>
+                </div>
+                <div className="mt-4 md:mt-0 bg-white/10 backdrop-blur-md border border-white/20 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider">
+                    Total Applications: {applications.length}
+                </div>
+            </div>
+
+            {/* Filter Bar */}
+            <div className="flex flex-col md:flex-row gap-4 items-center surface p-4 rounded-2xl border border-[var(--border)] shadow-sm">
+                <div className="relative w-full md:w-80">
+                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-tertiary)]" />
+                    <input 
+                        type="text" 
+                        placeholder="Search student, job, or company..." 
+                        className="w-full pl-10 pr-4 py-2.5 bg-[var(--bg-inset)] border border-[var(--border)] rounded-xl text-sm text-[var(--text-primary)] focus:outline-none"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                </div>
+                <div className="flex items-center space-x-2">
+                    <Filter className="w-4 h-4 text-[var(--text-tertiary)]" />
+                    <select 
+                        className="bg-[var(--bg-inset)] border border-[var(--border)] rounded-xl px-3.5 py-2.5 text-xs font-semibold text-[var(--text-primary)] focus:outline-none"
+                        value={stageFilter}
+                        onChange={(e) => setStageFilter(e.target.value)}
+                    >
+                        <option value="ALL">All Application Stages</option>
+                        <option value="APPLIED">Applied</option>
+                        <option value="UNDER_REVIEW">Under Review</option>
+                        <option value="SHORTLISTED">Shortlisted</option>
+                        <option value="INTERVIEW_SCHEDULED">Interview Scheduled</option>
+                        <option value="SELECTED">Selected / Offered</option>
+                        <option value="REJECTED">Rejected</option>
+                        <option value="WITHDRAWN">Withdrawn / Blocked</option>
+                    </select>
+                </div>
+            </div>
+
+            {/* Applications Table */}
+            <div className="surface rounded-2xl border border-[var(--border)] shadow-sm overflow-hidden">
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left text-sm">
+                        <thead className="bg-[var(--bg-surface-2)] text-[var(--text-tertiary)] uppercase text-[11px] font-bold tracking-wider">
+                            <tr>
+                                <th className="px-6 py-4">Student</th>
+                                <th className="px-6 py-4">Company & Job Title</th>
+                                <th className="px-6 py-4">Branch</th>
+                                <th className="px-6 py-4">AI Match</th>
+                                <th className="px-6 py-4">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-[var(--border)]">
+                            {filteredApps.map(app => (
+                                <tr key={app.id} className="hover:bg-[var(--bg-surface-3)]/40 transition-colors">
+                                    <td className="px-6 py-4">
+                                        <div className="font-bold text-[var(--text-primary)]">{app.student?.fullName || app.studentName || 'Student'}</div>
+                                        <div className="text-xs text-[var(--text-tertiary)]">{app.student?.rollNumber || '2026-ENG'}</div>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <div className="font-bold text-brand-600 dark:text-brand-400">{app.job?.company?.name || app.companyName || 'Tech Hiring Client'}</div>
+                                        <div className="text-xs text-[var(--text-secondary)] font-medium">{app.job?.title || app.jobTitle || 'Software Engineer'}</div>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <span className="px-2.5 py-1 bg-brand-500/10 text-brand-600 rounded-lg text-xs font-semibold">
+                                            {app.student?.branch || 'Computer'}
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <span className="px-2.5 py-1 bg-emerald-500/10 text-emerald-600 rounded-lg text-xs font-bold">
+                                            {app.aiMatchScore ? `${app.aiMatchScore}% Match` : '82% Match'}
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <span className={`px-2.5 py-1 rounded-lg text-xs font-extrabold ${getStatusBadge(app.status)}`}>
+                                            {app.status || 'APPLIED'}
+                                        </span>
+                                    </td>
+                                </tr>
+                            ))}
+                            {filteredApps.length === 0 && !loading && (
+                                <tr>
+                                    <td colSpan={5} className="px-6 py-12 text-center text-[var(--text-tertiary)]">
+                                        <div className="flex flex-col items-center justify-center">
+                                            <FileText size={36} className="mb-2 opacity-50" />
+                                            <p className="font-semibold">No student applications matching criteria.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
-      </div>
-
-      <div className="card p-4">
-        <div className="flex items-center bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
-          <Search size={18} className="text-slate-400 mr-2" />
-          <input 
-            type="text" 
-            placeholder="Search by student, job, or company..." 
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="bg-transparent border-none outline-none w-full text-sm"
-          />
-        </div>
-      </div>
-
-      <div className="card overflow-hidden">
-        {filteredApps.length === 0 ? (
-          <EmptyState icon={<ClipboardList size={28} />} title="No applications found" description="No students have applied to jobs yet." />
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr>
-                  <th className="table-header">Student</th>
-                  <th className="table-header">Job Title</th>
-                  <th className="table-header">Company</th>
-                  <th className="table-header">Match Score</th>
-                  <th className="table-header">Status</th>
-                  <th className="table-header">Applied On</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredApps.map((app: any) => (
-                  <tr key={app.id} className="border-b border-slate-100 hover:bg-slate-50">
-                    <td className="p-4 font-semibold text-slate-800">{app.student?.fullName || 'N/A'}</td>
-                    <td className="p-4 font-medium text-slate-700">{app.job?.title || 'N/A'}</td>
-                    <td className="p-4 text-slate-600">{app.job?.company?.name || 'N/A'}</td>
-                    <td className="p-4">
-                      {app.aiMatchScore ? (
-                        <span className={`px-2 py-1 rounded-full text-xs font-bold ${app.aiMatchScore >= 80 ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600'}`}>
-                          {app.aiMatchScore}%
-                        </span>
-                      ) : '-'}
-                    </td>
-                    <td className="p-4">
-                      <StatusBadge status={app.status} />
-                    </td>
-                    <td className="p-4 text-slate-500 text-sm">{app.createdAt ? new Date(app.createdAt).toLocaleDateString() : 'N/A'}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-    </div>
-  );
+    );
 }

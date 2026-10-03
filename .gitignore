@@ -15,4 +15,5 @@ node_modules/
 *.iml
 .vscode/
 .DS_Store
+.expo/
 *.log

@@ -12,8 +12,14 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 
+import jakarta.persistence.Index;
+
 @Entity
-@Table(name = "applications")
+@Table(name = "applications", indexes = {
+    @Index(name = "idx_app_student", columnList = "student_id"),
+    @Index(name = "idx_app_job", columnList = "job_id"),
+    @Index(name = "idx_app_status", columnList = "status")
+})
 @Getter
 @Setter
 public class Application extends BaseEntity {

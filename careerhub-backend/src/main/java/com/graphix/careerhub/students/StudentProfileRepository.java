@@ -8,4 +8,6 @@ public interface StudentProfileRepository extends JpaRepository<StudentProfile, 
     Optional<StudentProfile> findByUserId(Long userId);
     Optional<StudentProfile> findByRollNumber(String rollNumber);
     boolean existsByRollNumber(String rollNumber);
+    java.util.List<StudentProfile> findByBranch(String branch);
+    java.util.List<StudentProfile> findByVerificationStatus(StudentProfile.VerificationStatus status);
 }

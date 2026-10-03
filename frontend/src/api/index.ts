@@ -1,7 +1,9 @@
 import axios from 'axios';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8081/api/v1';
+
 const api = axios.create({
-  baseURL: 'http://localhost:8081/api/v1',
+  baseURL: API_BASE_URL,
   headers: { 'Content-Type': 'application/json' },
 });
 
@@ -20,7 +22,7 @@ api.interceptors.response.use(
       const refreshToken = localStorage.getItem('refreshToken');
       if (refreshToken) {
         try {
-          const res = await axios.post('http://localhost:8081/api/v1/auth/refresh', { refreshToken });
+          const res = await axios.post(`${API_BASE_URL}/auth/refresh`, { refreshToken });
           const { accessToken, refreshToken: newRefresh } = res.data.data;
           localStorage.setItem('accessToken', accessToken);
           localStorage.setItem('refreshToken', newRefresh);
@@ -99,6 +101,13 @@ export const authApi = {
       throw error;
     }
   },
+  loginWithGoogle: async (data: { token: string }) => {
+    try {
+      return await api.post('/auth/google', data);
+    } catch (error: any) {
+      throw error;
+    }
+  },
   refresh: async (refreshToken: string) => {
     try {
       return await api.post('/auth/refresh', { refreshToken });
@@ -158,6 +167,8 @@ export const adminApi = {
   getStudents: () => api.get('/admin/students'),
   approveStudent: (id: number) => api.patch(`/admin/students/${id}/approve`),
   rejectStudent: (id: number) => api.patch(`/admin/students/${id}/reject`),
+  blockStudent: (id: number) => api.patch(`/admin/students/${id}/block`),
+  unblockStudent: (id: number) => api.patch(`/admin/students/${id}/unblock`),
   getAuditLogs: () => api.get('/admin/audit-logs?page=0&size=50'),
 };
 
