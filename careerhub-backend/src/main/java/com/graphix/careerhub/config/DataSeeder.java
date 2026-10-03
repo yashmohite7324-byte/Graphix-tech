@@ -13,27 +13,25 @@ public class DataSeeder {
     @Bean
     CommandLineRunner initDatabase(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         return args -> {
-            // 1. Admin Account 1
+            // 1. Exclusive System Admin Account
             String adminEmail = "admin@graphixinfotech.com";
-            if (!userRepository.existsByEmail(adminEmail)) {
-                User admin = new User();
+            User admin = userRepository.findByEmail(adminEmail).orElse(null);
+            if (admin == null) {
+                admin = new User();
                 admin.setEmail(adminEmail);
-                admin.setPasswordHash(passwordEncoder.encode("Graphix@Admin2026!"));
+                admin.setPasswordHash(passwordEncoder.encode("Graphix@Admin 2026!"));
+                admin.setRole(User.Role.SUPER_ADMIN);
+                admin.setStatus(User.Status.ACTIVE);
+                userRepository.save(admin);
+            } else {
+                admin.setPasswordHash(passwordEncoder.encode("Graphix@Admin 2026!"));
                 admin.setRole(User.Role.SUPER_ADMIN);
                 admin.setStatus(User.Status.ACTIVE);
                 userRepository.save(admin);
             }
 
-            // 2. Admin Account 2
-            String adminEdu = "admin@graphix.edu";
-            if (!userRepository.existsByEmail(adminEdu)) {
-                User admin2 = new User();
-                admin2.setEmail(adminEdu);
-                admin2.setPasswordHash(passwordEncoder.encode("Admin@Graphix2026"));
-                admin2.setRole(User.Role.SUPER_ADMIN);
-                admin2.setStatus(User.Status.ACTIVE);
-                userRepository.save(admin2);
-            }
+            // Remove legacy admin@graphix.edu if present
+            userRepository.findByEmail("admin@graphix.edu").ifPresent(userRepository::delete);
 
             // 3. Recruiter Test Account (hr@logica.com / Password@123)
             String recruiterEmail = "hr@logica.com";
