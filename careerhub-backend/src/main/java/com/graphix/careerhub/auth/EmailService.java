@@ -36,8 +36,8 @@ public class EmailService {
             return;
         }
 
-        // Determine destination: If sending to a unverified domain on Resend trial, send to registered test account yashmohite7324@gmail.com
-        final String targetEmail = (to.endsWith("@graphix.edu.in") || to.endsWith("@graphix.edu") || to.endsWith("@example.com"))
+        // Determine destination: On Resend free tier (onboarding@resend.dev), only verified developer email is allowed
+        final String targetEmail = (fromEmail != null && fromEmail.contains("resend.dev"))
                 ? testRecipient
                 : to;
 
