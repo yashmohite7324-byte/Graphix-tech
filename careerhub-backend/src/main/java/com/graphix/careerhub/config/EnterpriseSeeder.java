@@ -19,6 +19,9 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Random;
 
+import com.graphix.careerhub.jobs.Job;
+import com.graphix.careerhub.jobs.JobRepository;
+
 @Component
 @Order(2)
 public class EnterpriseSeeder implements CommandLineRunner {
@@ -28,6 +31,7 @@ public class EnterpriseSeeder implements CommandLineRunner {
     private final CompanyRepository companyRepository;
     private final RecruiterProfileRepository recruiterProfileRepository;
     private final TrainingProgramRepository trainingProgramRepository;
+    private final JobRepository jobRepository;
     private final PasswordEncoder passwordEncoder;
 
     public EnterpriseSeeder(UserRepository userRepository,
@@ -35,12 +39,14 @@ public class EnterpriseSeeder implements CommandLineRunner {
                             CompanyRepository companyRepository,
                             RecruiterProfileRepository recruiterProfileRepository,
                             TrainingProgramRepository trainingProgramRepository,
+                            JobRepository jobRepository,
                             PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.studentProfileRepository = studentProfileRepository;
         this.companyRepository = companyRepository;
         this.recruiterProfileRepository = recruiterProfileRepository;
         this.trainingProgramRepository = trainingProgramRepository;
+        this.jobRepository = jobRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -50,6 +56,7 @@ public class EnterpriseSeeder implements CommandLineRunner {
             seedCompanies();
             seedStudents();
             seedTrainingPrograms();
+            seedJobs();
         } catch (Exception e) {
             System.err.println("EnterpriseSeeder notice: " + e.getMessage());
         }
@@ -257,6 +264,38 @@ public class EnterpriseSeeder implements CommandLineRunner {
 
             trainingProgramRepository.saveAll(List.of(p1, p2, p3, p4));
             System.out.println("Seeded 4 Corporate Placement Training Programs into PostgreSQL.");
+        } catch (Exception e) {
+            // Non-fatal
+        }
+    }
+
+    private void seedJobs() {
+        try {
+            if (jobRepository.count() >= 10) {
+                return;
+            }
+            List<Company> companies = companyRepository.findAll();
+            if (companies.isEmpty()) return;
+
+            String[] titles = {
+                "Software Development Engineer (SDE-1)", "Frontend React Engineer", "Backend Java Microservices Developer",
+                "Cloud & DevOps Engineer", "Full Stack Developer (MERN/Spring)", "Data Analyst & Business Intelligence",
+                "AI/ML Engineer Trainee", "QA Automation Engineer", "Cybersecurity Analyst", "Mobile App Developer (React Native)"
+            };
+
+            Double[] ctcs = {12.5, 9.8, 14.0, 11.2, 10.5, 8.5, 16.0, 7.5, 13.0, 10.0};
+
+            for (int i = 0; i < titles.length; i++) {
+                Job j = new Job();
+                j.setTitle(titles[i]);
+                j.setCompany(companies.get(i % companies.size()));
+                j.setDescription("Exciting opportunity to work with cutting-edge technologies. Minimum CGPA: 7.0+, Allowed Branches: Computer, IT, Data Science, ENTC.");
+                j.setCtc(ctcs[i]);
+                j.setApplicationDeadline(LocalDate.now().plusDays(15 + i * 2));
+                j.setStatus(Job.Status.OPEN);
+                jobRepository.save(j);
+            }
+            System.out.println("Seeded 10 Active Job Postings into PostgreSQL.");
         } catch (Exception e) {
             // Non-fatal
         }
