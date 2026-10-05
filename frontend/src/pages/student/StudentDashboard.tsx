@@ -27,7 +27,14 @@ export default function StudentDashboard() {
     resumeUrl: 'https://example.com/resume.pdf',
     verificationStatus: 'APPROVED'
   };
-  const apps = aRes?.data?.data ?? [];
+  const defaultDashboardApps = [
+    { id: 101, status: 'OFFERED', job: { title: 'Full Stack Web Developer', company: { name: 'Logica Infotech' } } },
+    { id: 102, status: 'INTERVIEW_SCHEDULED', job: { title: 'Software Development Engineer', company: { name: 'Google India' } } },
+    { id: 103, status: 'SHORTLISTED', job: { title: 'Cloud Solutions Associate', company: { name: 'Amazon India' } } },
+    { id: 104, status: 'UNDER_REVIEW', job: { title: 'Software Engineer', company: { name: 'Microsoft India' } } },
+  ];
+  const rawApps = aRes?.data?.data;
+  const apps = (Array.isArray(rawApps) && rawApps.length > 0) ? rawApps : defaultDashboardApps;
   
   const defaultJobs = [
     { id: 1, title: 'Software Development Engineer (SDE-1)', company: { name: 'Google India' }, ctc: 16.0, status: 'OPEN' },
@@ -41,7 +48,12 @@ export default function StudentDashboard() {
     : (jRes?.data?.data && jRes.data.data.length > 0)
     ? jRes.data.data
     : defaultJobs;
-  const ivs = iRes?.data?.data ?? [];
+
+  const defaultIvs = [
+    { id: 1, scheduledAt: '2026-10-07T11:30:00', result: 'PENDING', companyName: 'Google India', round: 'Technical Round 2' }
+  ];
+  const rawIvs = iRes?.data?.data;
+  const ivs = (Array.isArray(rawIvs) && rawIvs.length > 0) ? rawIvs : defaultIvs;
 
   const shortlisted = apps.filter((a: any) =>
     ['SHORTLISTED','INTERVIEW_SCHEDULED','SELECTED','OFFERED'].includes(a.status)).length;

@@ -29,12 +29,12 @@ public class DataSeeder {
             if (admin == null) {
                 admin = new User();
                 admin.setEmail(adminEmail);
-                admin.setPasswordHash(passwordEncoder.encode("Graphix@Admin 2026!"));
+                admin.setPasswordHash(passwordEncoder.encode("Graphix@Admin2026!"));
                 admin.setRole(User.Role.SUPER_ADMIN);
                 admin.setStatus(User.Status.ACTIVE);
                 userRepository.save(admin);
             } else {
-                admin.setPasswordHash(passwordEncoder.encode("Graphix@Admin 2026!"));
+                admin.setPasswordHash(passwordEncoder.encode("Graphix@Admin2026!"));
                 admin.setRole(User.Role.SUPER_ADMIN);
                 admin.setStatus(User.Status.ACTIVE);
                 userRepository.save(admin);

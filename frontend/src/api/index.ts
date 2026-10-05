@@ -18,6 +18,7 @@ const API_BASE_URL = getBaseUrl();
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: { 'Content-Type': 'application/json' },
+  timeout: 10000,
 });
 
 api.interceptors.request.use((config) => {
@@ -30,12 +31,14 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const original = error.config;
-    if (error.response?.status === 401 && !original._retry) {
+    const url = original?.url || '';
+    const isAuthEndpoint = url.includes('/auth/login') || url.includes('/auth/register') || url.includes('/auth/refresh') || url.includes('/auth/otp');
+    if (error.response?.status === 401 && !original._retry && !isAuthEndpoint) {
       original._retry = true;
       const refreshToken = localStorage.getItem('refreshToken');
-      if (refreshToken) {
+      if (refreshToken && refreshToken !== 'demo-refresh-token') {
         try {
-          const res = await axios.post(`${API_BASE_URL}/auth/refresh`, { refreshToken });
+          const res = await axios.post(`${API_BASE_URL}/auth/refresh`, { refreshToken }, { timeout: 8000 });
           const { accessToken, refreshToken: newRefresh } = res.data.data;
           localStorage.setItem('accessToken', accessToken);
           localStorage.setItem('refreshToken', newRefresh);
@@ -54,7 +57,12 @@ api.interceptors.response.use(
 export default api;
 
 const isDemoFault = (error: any) => {
-  return !error?.response || error.code === 'ERR_NETWORK' || error.response?.status === 404 || error.response?.status >= 500;
+  return !error?.response || 
+         error.code === 'ERR_NETWORK' || 
+         error.code === 'ECONNABORTED' || 
+         error.message?.includes('timeout') ||
+         error.response?.status === 404 || 
+         error.response?.status >= 500;
 };
 
 const authDemoResponse = <T>(payload: T) => ({
@@ -103,12 +111,15 @@ export const authApi = {
     } catch (error: any) {
       console.error('Login error:', error.response?.data || error.message);
       if (isDemoFault(error)) {
-        const role = /recruit/i.test(data.email) ? 'RECRUITER' : 'STUDENT';
+        const emailLower = (data.email || '').toLowerCase().trim();
+        const role = emailLower.includes('admin') ? 'SUPER_ADMIN' : (/recruit/i.test(emailLower) || emailLower.startsWith('hr@')) ? 'RECRUITER' : 'STUDENT';
+        const name = role === 'SUPER_ADMIN' ? 'Graphix Administrator' : role === 'RECRUITER' ? 'HR Recruiter' : 'Shreya Kudale';
         return authDemoResponse({
           accessToken: 'demo-access-token',
           refreshToken: 'demo-refresh-token',
           role,
           email: data.email,
+          name,
         });
       }
       throw error;

@@ -36,18 +36,33 @@ const queryClient = new QueryClient({
 function PrivateRoute({ children, allowedRoles }: { children: React.ReactNode; allowedRoles?: string[] }) {
   const { user, isAuthenticated } = useAuth();
   if (!isAuthenticated) return <Navigate to="/login" replace />;
-  if (allowedRoles && user && !allowedRoles.includes(user.role)) return <Navigate to="/login" replace />;
+  if (allowedRoles && user) {
+    const userRole = (user.role || '').toUpperCase();
+    const isAdmin = ['ADMIN', 'SUPER_ADMIN', 'PLACEMENT_ADMIN'].includes(userRole);
+    const hasAccess = allowedRoles.some(r => {
+      const rUpper = r.toUpperCase();
+      if (rUpper === userRole) return true;
+      if (isAdmin && ['ADMIN', 'SUPER_ADMIN', 'PLACEMENT_ADMIN'].includes(rUpper)) return true;
+      return false;
+    });
+    if (!hasAccess) return <Navigate to="/login" replace />;
+  }
   return <AppLayout>{children}</AppLayout>;
 }
 
 function RoleRedirect() {
   const { user } = useAuth();
   const routes: Record<string, string> = {
-    STUDENT: '/student/dashboard', RECRUITER: '/recruiter/dashboard',
-    PLACEMENT_ADMIN: '/admin/dashboard', SUPER_ADMIN: '/admin/dashboard', TRAINER: '/trainer/dashboard',
+    STUDENT: '/student/dashboard',
+    RECRUITER: '/recruiter/dashboard',
+    PLACEMENT_ADMIN: '/admin/dashboard',
+    SUPER_ADMIN: '/admin/dashboard',
+    ADMIN: '/admin/dashboard',
+    TRAINER: '/trainer/dashboard',
   };
   if (!user) return <Navigate to="/login" replace />;
-  return <Navigate to={routes[user.role] || '/login'} replace />;
+  const roleKey = (user.role || '').toUpperCase();
+  return <Navigate to={routes[roleKey] || '/login'} replace />;
 }
 
 function ComingSoon({ title }: { title: string }) {
@@ -108,7 +123,6 @@ export default function App() {
             <Route path="/admin/analytics" element={<PrivateRoute allowedRoles={['PLACEMENT_ADMIN','SUPER_ADMIN']}><AdminAnalyticsPage /></PrivateRoute>} />
             <Route path="/admin/audit" element={<PrivateRoute allowedRoles={['PLACEMENT_ADMIN','SUPER_ADMIN']}><AdminAuditPage /></PrivateRoute>} />
             <Route path="/admin/announcements" element={<PrivateRoute allowedRoles={['PLACEMENT_ADMIN','SUPER_ADMIN']}><AdminAnnouncementsPage /></PrivateRoute>} />
-            <Route path="/admin/settings" element={<PrivateRoute allowedRoles={['SUPER_ADMIN']}><ComingSoon title="Settings" /></PrivateRoute>} />
             {/* Trainer Routes */}
             <Route path="/trainer/dashboard" element={<PrivateRoute allowedRoles={['TRAINER']}><TrainerDashboard /></PrivateRoute>} />
             <Route path="/trainer/programs" element={<PrivateRoute allowedRoles={['TRAINER']}><TrainerProgramsPage /></PrivateRoute>} />

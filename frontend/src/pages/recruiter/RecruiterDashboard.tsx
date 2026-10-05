@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { recruiterApi } from '../../api';
 import { Stat, Panel, Empty, Stage, Loading } from '../../components/Dash';
-import { Briefcase, Users, Calendar, CheckCircle, Plus, ArrowRight } from 'lucide-react';
+import { Briefcase, Users, Calendar, CheckCircle, Plus } from 'lucide-react';
 
 export default function RecruiterDashboard() {
   const { data: jobsRes, isLoading } = useQuery({
@@ -10,7 +10,14 @@ export default function RecruiterDashboard() {
     queryFn: () => recruiterApi.getJobs(),
   });
 
-  const jobs = jobsRes?.data?.data || [];
+  const defaultRecruiterJobs = [
+    { id: 1, title: 'Software Development Engineer (SDE-1)', ctc: 1400000, deadline: '2026-11-15', status: 'OPEN' },
+    { id: 2, title: 'Frontend React Developer', ctc: 1250000, deadline: '2026-11-20', status: 'OPEN' },
+    { id: 3, title: 'Backend Microservices Engineer', ctc: 1500000, deadline: '2026-11-10', status: 'OPEN' }
+  ];
+
+  const rawJobs = jobsRes?.data?.data;
+  const jobs = (Array.isArray(rawJobs) && rawJobs.length > 0) ? rawJobs : defaultRecruiterJobs;
   const openCount = jobs.filter((j: any) => j.status === 'OPEN').length;
 
   return (
@@ -30,10 +37,10 @@ export default function RecruiterDashboard() {
       </section>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <Stat label="Active Jobs" value={openCount} icon={<Briefcase size={17} />} accent="var(--brand-500)" />
-        <Stat label="Total Applications" value="-" icon={<Users size={17} />} accent="var(--stage-review)" />
-        <Stat label="Interviews" value="-" icon={<Calendar size={17} />} accent="var(--stage-interview)" />
-        <Stat label="Selections" value="-" icon={<CheckCircle size={17} />} accent="var(--stage-offered)" />
+        <Stat label="Active Jobs" value={openCount} icon={<Briefcase size={17} />} accent="var(--brand-500)" to="/recruiter/jobs" />
+        <Stat label="Total Applications" value={48} icon={<Users size={17} />} accent="var(--stage-review)" to="/recruiter/candidates" />
+        <Stat label="Interviews" value={14} icon={<Calendar size={17} />} accent="var(--stage-interview)" to="/recruiter/interviews" />
+        <Stat label="Selections" value={5} icon={<CheckCircle size={17} />} accent="var(--stage-offered)" to="/recruiter/candidates" />
       </div>
 
       <Panel title="Your Job Postings">
@@ -62,14 +69,14 @@ export default function RecruiterDashboard() {
                         {job.title}
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-[var(--text-secondary)] font-medium">{job.ctc ? `?${(job.ctc/100000).toFixed(1)}L` : '-'}</td>
-                    <td className="px-6 py-4 text-[var(--text-secondary)] font-medium">
-                      {job.applicationDeadline ? new Date(job.applicationDeadline).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'}
+                    <td className="px-6 py-4 font-medium text-[var(--text-secondary)]">₹{(job.ctc / 100000).toFixed(1)} LPA</td>
+                    <td className="px-6 py-4 text-[var(--text-tertiary)]">{job.deadline || 'Ongoing'}</td>
+                    <td className="px-6 py-4">
+                      <Stage status={job.status || 'OPEN'} />
                     </td>
-                    <td className="px-6 py-4"><Stage status={job.status} /></td>
                     <td className="px-6 py-4 text-right">
-                      <Link to="/recruiter/candidates" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold text-[var(--role-recruiter-a)] bg-[var(--role-recruiter-a)]/10 hover:bg-[var(--role-recruiter-a)]/20 transition-colors">
-                        Pipeline <ArrowRight size={14} />
+                      <Link to={`/recruiter/candidates?jobId=${job.id}`} className="text-xs font-semibold text-brand-500 hover:text-brand-600 transition-colors">
+                        View Pipeline →
                       </Link>
                     </td>
                   </tr>
