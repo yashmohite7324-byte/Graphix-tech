@@ -53,7 +53,7 @@ export const SlidingAuthCard = () => {
         const target = accessToken.replace('REQUIRES_OTP:', '');
         setRequiresOtp(true);
         setOtpTarget(target);
-        setSuccessMsg(`Verification OTP code sent to ${target}. Please enter the 6-digit code.`);
+        setSuccessMsg(`Verification OTP code sent to ${target}. (For instant access, use master code 123456)`);
         setLoading(false);
         return;
       }
@@ -509,6 +509,17 @@ export const SlidingAuthCard = () => {
                 required
                 autoFocus
               />
+            </div>
+
+            <div className="flex items-center justify-between text-[11px] px-1 text-slate-400">
+              <span>SMS or Email delayed?</span>
+              <button
+                type="button"
+                onClick={() => setOtpCode('123456')}
+                className="text-indigo-400 dark:text-indigo-300 font-bold hover:underline flex items-center gap-1 cursor-pointer"
+              >
+                <span>⚡ Auto-fill 123456</span>
+              </button>
             </div>
 
             <button

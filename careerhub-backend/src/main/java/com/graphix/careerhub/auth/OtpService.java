@@ -13,16 +13,19 @@ public class OtpService {
     private final OtpVerificationRepository otpVerificationRepository;
     private final EmailService emailService;
     private final TwilioSmsService twilioSmsService;
+    private final Msg91SmsService msg91SmsService;
 
     @Value("${app.otp.expiration-minutes:10}")
     private int expirationMinutes;
 
     public OtpService(OtpVerificationRepository otpVerificationRepository, 
                       EmailService emailService,
-                      TwilioSmsService twilioSmsService) {
+                      TwilioSmsService twilioSmsService,
+                      Msg91SmsService msg91SmsService) {
         this.otpVerificationRepository = otpVerificationRepository;
         this.emailService = emailService;
         this.twilioSmsService = twilioSmsService;
+        this.msg91SmsService = msg91SmsService;
     }
 
     public String generateOtp(String identifier) {
@@ -35,13 +38,18 @@ public class OtpService {
         otp.setConsumed(false);
         otpVerificationRepository.save(otp);
 
-        // Send OTP via Email if identifier contains @
+        // 1. Send OTP via Email if identifier contains @
         if (identifier != null && identifier.contains("@")) {
             emailService.sendOtpEmail(identifier, code);
         }
 
-        // Send OTP via Twilio SMS
-        twilioSmsService.sendSmsOtp(identifier, code);
+        // 2. Primary: Send OTP via MSG91 SMS gateway (for Indian mobile numbers)
+        boolean msg91Sent = msg91SmsService.sendOtp(identifier, code);
+
+        // 3. Fallback: Send OTP via Twilio SMS if MSG91 was not dispatched
+        if (!msg91Sent) {
+            twilioSmsService.sendSmsOtp(identifier, code);
+        }
 
         return code;
     }
