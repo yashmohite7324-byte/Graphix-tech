@@ -41,7 +41,7 @@ public class EmailService {
                 ? testRecipient
                 : to;
 
-        Thread.ofVirtual().start(() -> {
+        java.util.concurrent.CompletableFuture.runAsync(() -> {
             try {
                 String htmlContent = "<div style='font-family: Arial, sans-serif; padding: 25px; background-color: #0f172a; color: #f8fafc; border-radius: 12px; max-width: 480px; margin: 0 auto;'>"
                         + "<h2 style='color: #6366f1; text-align: center; margin-top: 0;'>Graphix TechHire</h2>"
